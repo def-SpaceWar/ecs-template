@@ -4,6 +4,7 @@ import type { Color } from "./render/color";
 import type { Position } from "./primitive/position";
 import type { Rotation } from "./render/rotation";
 import type { Behavior } from "./primitive/behavior";
+import type { Velocity } from "./physics/velocity";
 
 interface ComponentTypeMap {
     "rectangle": Rectangle;
@@ -11,6 +12,7 @@ interface ComponentTypeMap {
     "position": Position;
     "rotation": Rotation;
     "behavior": Behavior;
+    "velocity": Velocity;
 }
 
 export type Component = {
