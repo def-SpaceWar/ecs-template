@@ -7,6 +7,7 @@ export type Position = {
     pos: Vector2D;
 };
 
+export function position(entity: Entity, x: number, y: number): Position;
 export function position(
     entity: Entity,
     ...pos: Vector2D

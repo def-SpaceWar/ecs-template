@@ -3,12 +3,14 @@ import type { Rectangle } from "./render/rectangle";
 import type { Color } from "./render/color";
 import type { Position } from "./primitive/position";
 import type { Rotation } from "./render/rotation";
+import type { Behavior } from "./primitive/behavior";
 
 interface ComponentTypeMap {
     "rectangle": Rectangle;
     "color": Color;
     "position": Position;
     "rotation": Rotation;
+    "behavior": Behavior;
 }
 
 export type Component = {
@@ -20,7 +22,7 @@ export function isComponent<T extends keyof ComponentTypeMap>(
     type: T,
     component: Component
 ): component is ComponentTypeMap[T] {
-  return component.type == type;
+    return component.type == type;
 }
 
 export function getComponent<T extends keyof ComponentTypeMap>(
