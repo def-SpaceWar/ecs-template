@@ -1,53 +1,37 @@
 import type { Entity } from "./entity";
-import type { Rectangle } from "./render/rectangle";
-import type { Color } from "./render/color";
-import type { Position } from "./primitive/position";
-import type { Rotation } from "./render/rotation";
-import type { Behavior } from "./primitive/behavior";
-import type { Velocity } from "./physics/velocity";
-
-interface ComponentTypeMap {
-    "rectangle": Rectangle;
-    "color": Color;
-    "position": Position;
-    "rotation": Rotation;
-    "behavior": Behavior;
-    "velocity": Velocity;
-}
 
 export type Component = {
-    type: string;
     entity: Entity;
 };
 
-export function isComponent<T extends keyof ComponentTypeMap>(
-    type: T,
+export function isComponent<T extends Component>(
+    Type: new (...args: any[]) => T,
     component: Component
-): component is ComponentTypeMap[T] {
-    return component.type == type;
+): component is T {
+    return component instanceof Type;
 }
 
-export function getComponent<T extends keyof ComponentTypeMap>(
+export function getComponent<T extends Component>(
     entity: Entity,
-    type: T,
+    Type: new (...args: any[]) => T,
     components: Component[]
-): ComponentTypeMap[T] | null {
+): T | null {
     for (let i = 0; i < components.length; i++) {
         const component = components[i];
-        if (component.entity == entity && isComponent(type, component)) return component;
+        if (component.entity == entity && isComponent(Type, component)) return component;
     }
     return null;
 }
 
-export function getComponents<T extends keyof ComponentTypeMap>(
+export function getComponents<T extends Component>(
     entity: Entity,
-    type: T,
+    Type: new (...args: any[]) => T,
     components: Component[]
-): ComponentTypeMap[T][] {
-    const comps: ComponentTypeMap[T][] = [];
+): T[] {
+    const comps: T[] = [];
     for (let i = 0; i < components.length; i++) {
         const component = components[i];
-        if (component.entity == entity && isComponent(type, component)) comps.push(component);
+        if (component.entity == entity && isComponent(Type, component)) comps.push(component);
     }
     return comps;
 }

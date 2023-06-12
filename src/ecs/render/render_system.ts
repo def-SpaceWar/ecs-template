@@ -2,7 +2,10 @@ import type { System } from "../system";
 import { type Vector2D, scale } from "../physics/vector";
 import { type Component, getComponent } from "../component";
 import { totalEntities } from "../entity";
-import { colorToString } from "./color";
+import { Color } from "./color";
+import { Position } from "../primitive/position";
+import { Rotation } from "./rotation";
+import { Rectangle } from "./rectangle";
 
 export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
     const ctx = document.getElementById('app')!.appendChild(
@@ -25,16 +28,16 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (let e = 0; e < totalEntities(); e++) {
-            const rect = getComponent(e, 'rectangle', components);
+            const rect = getComponent(e, Rectangle, components);
 
             if (rect) {
-                const position = getComponent(e, 'position', components);
+                const position = getComponent(e, Position, components);
                 const pos: Vector2D = position ? position.pos : [0, 0];
 
-                const color = getComponent(e, 'color', components);
-                const fillStyle = color ? colorToString(color) : 'black';
+                const color = getComponent(e, Color, components);
+                const fillStyle = color ? color.toString() : 'black';
 
-                const rotation = getComponent(e, 'rotation', components);
+                const rotation = getComponent(e, Rotation, components);
                 const angle = rotation ? rotation.angle : 0;
 
                 //const isCamera = !!getComponent(e, 'isCamera', components);
