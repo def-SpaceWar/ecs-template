@@ -3,7 +3,7 @@ import { type Component } from './ecs/component';
 import { entity } from './ecs/entity';
 import { Behavior } from './ecs/primitive/behavior';
 import { createBehaviorSystem } from './ecs/primitive/behavior_system';
-import { Position } from './ecs/primitive/position';
+import { Position } from './ecs/render/position';
 import { Velocity } from './ecs/physics/velocity';
 import { Color } from './ecs/render/color';
 import { Rectangle } from './ecs/render/rectangle';

@@ -3,7 +3,7 @@ import { type Vector2D, scale } from "../physics/vector";
 import { type Component, getComponent } from "../component";
 import { totalEntities } from "../entity";
 import { Color } from "./color";
-import { Position } from "../primitive/position";
+import { Position } from "../render/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
 

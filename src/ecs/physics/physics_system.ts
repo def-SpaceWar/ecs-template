@@ -1,6 +1,6 @@
 import { type Component, getComponent } from "../component";
 import { totalEntities } from "../entity";
-import { Position } from "../primitive/position";
+import { Position } from "../render/position";
 import type { System } from "../system";
 import { add, scale } from "./vector";
 import { Velocity } from "./velocity";

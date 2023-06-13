@@ -1,7 +1,7 @@
 import { getComponent, type Component } from "../ecs/component";
 import { type Entity } from "../ecs/entity";
 import { BehaviorInterface } from "../ecs/primitive/behavior";
-import { Position } from "../ecs/primitive/position";
+import { Position } from "../ecs/render/position";
 import { DIMENSIONS } from "../ecs/render/render_system";
 import { Rotation } from "../ecs/render/rotation";
 
