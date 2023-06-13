@@ -7,20 +7,22 @@ import { Position } from "../primitive/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
 
+export const DIMENSIONS: Vector2D = [0, 0];
+
 export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
     const ctx = document.getElementById('app')!.appendChild(
         document.createElement('canvas')
     ).getContext('2d')!;
 
     if (!dynamic) {
-        ctx.canvas.width = w;
-        ctx.canvas.height = h;
+        DIMENSIONS[0] = ctx.canvas.width = w;
+        DIMENSIONS[1] = ctx.canvas.height = h;
     } else {
-        ctx.canvas.width = window.innerWidth;
-        ctx.canvas.height = window.innerHeight;
+        DIMENSIONS[0] = ctx.canvas.width = window.innerWidth;
+        DIMENSIONS[1] = ctx.canvas.height = window.innerHeight;
         addEventListener('resize', () => {
-            ctx.canvas.width = window.innerWidth;
-            ctx.canvas.height = window.innerHeight;
+            DIMENSIONS[0] = ctx.canvas.width = window.innerWidth;
+            DIMENSIONS[1] = ctx.canvas.height = window.innerHeight;
         });
     }
 

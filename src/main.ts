@@ -1,5 +1,5 @@
 import './style.css';
-import { getComponent, type Component } from './ecs/component';
+import { type Component } from './ecs/component';
 import { entity } from './ecs/entity';
 import { Behavior } from './ecs/primitive/behavior';
 import { createBehaviorSystem } from './ecs/primitive/behavior_system';
@@ -10,6 +10,7 @@ import { Rectangle } from './ecs/render/rectangle';
 import { createRenderSystem } from './ecs/render/render_system';
 import { Rotation } from './ecs/render/rotation';
 import { createPhysicsSystem } from './ecs/physics/physics_system';
+import { MyTestBehavior } from './behaviors/my_test_behavior';
 
 const systems = [
     createRenderSystem(false),
@@ -31,15 +32,7 @@ components.push(new Rotation(player, Math.PI / 4));
 components.push(new Rectangle(player, 0, 0, 100, 100));
 
 // the special part
-components.push(new Behavior(player, (components: Component[], dt: number) => {
-    const position = getComponent(player, Position, components);
-    if (position && position.pos[0] > 871) {
-        position.pos[0] = -71;
-    }
-
-    const rotation = getComponent(player, Rotation, components);
-    if (rotation) rotation.angle += Math.PI * 0.5 * dt;
-}));
+components.push(new Behavior(player, MyTestBehavior));
 
 const animate = (before: number) => (now: number) => {
     const dt = Math.min((now - before) / 1_000, 0.5);
