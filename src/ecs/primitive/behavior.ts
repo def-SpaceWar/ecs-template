@@ -1,16 +1,21 @@
 import type { Component } from "../component";
 import type { Entity } from "../entity";
 
-export interface BehaviorClass {
+export interface BehaviorConstructor {
+    new (entity: Entity): BehaviorInterface;
+};
+
+export interface BehaviorInterface {
+    entity: Entity;
     update: (components: Component[], dt: number) => void;
 };
 
 export class Behavior {
-    behavior: BehaviorClass;
+    behavior: BehaviorInterface;
 
     constructor(
         public entity: Entity,
-        BehaviorKind: new (entity: Entity) => BehaviorClass
+        BehaviorKind: BehaviorConstructor
     ) {
         this.behavior = new BehaviorKind(entity);
     }

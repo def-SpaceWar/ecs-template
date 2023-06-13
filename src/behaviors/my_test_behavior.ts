@@ -1,11 +1,11 @@
 import { getComponent, type Component } from "../ecs/component";
 import { type Entity } from "../ecs/entity";
-import { BehaviorClass } from "../ecs/primitive/behavior";
+import { BehaviorInterface } from "../ecs/primitive/behavior";
 import { Position } from "../ecs/primitive/position";
 import { DIMENSIONS } from "../ecs/render/render_system";
 import { Rotation } from "../ecs/render/rotation";
 
-export class MyTestBehavior implements BehaviorClass {
+export class MyTestBehavior implements BehaviorInterface {
     constructor(public entity: Entity) { }
 
     update(components: Component[], dt: number) {
