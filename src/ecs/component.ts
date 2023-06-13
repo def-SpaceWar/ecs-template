@@ -1,6 +1,6 @@
 import type { Entity } from "./entity";
 
-export type Component = {
+export interface Component {
     entity: Entity;
 };
 

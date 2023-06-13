@@ -1,5 +1,5 @@
 import type { System } from "../system";
-import { type Vector2D, scale } from "../physics/vector";
+import { type Vector2D, scale } from "../../util/vector";
 import { type Component, getComponent } from "../component";
 import { totalEntities } from "../entity";
 import { Color } from "./color";

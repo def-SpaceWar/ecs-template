@@ -10,7 +10,7 @@ export interface BehaviorInterface {
     update: (components: Component[], dt: number) => void;
 };
 
-export class Behavior {
+export class Behavior implements Component {
     behavior: BehaviorInterface;
 
     constructor(

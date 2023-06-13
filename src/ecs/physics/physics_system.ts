@@ -2,7 +2,7 @@ import { type Component, getComponent } from "../component";
 import { totalEntities } from "../entity";
 import { Position } from "../render/position";
 import type { System } from "../system";
-import { add, scale } from "./vector";
+import { add, scale } from "../../util/vector";
 import { Velocity } from "./velocity";
 
 export function createPhysicsSystem(): System {
