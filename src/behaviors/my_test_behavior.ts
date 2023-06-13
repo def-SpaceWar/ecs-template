@@ -9,21 +9,18 @@ export class MyTestBehavior implements BehaviorInterface {
     position: Position | null = null;
     rotation: Rotation | null = null;
 
-    firstTime = true;
+    init = true;
 
     constructor(public entity: Entity) {}
 
     update(components: Component[], dt: number) {
-        if (this.firstTime) {
+        if (this.init) {
             this.position = getComponent(this.entity, Position, components);
             this.rotation = getComponent(this.entity, Rotation, components);
-            this.firstTime = false;
+            this.init = false;
         }
 
-        if (this.position && this.position.pos[0] > 71 + DIMENSIONS[0]) {
-            this.position.pos[0] = -71;
-        }
-
+        if (this.position && this.position.pos[0] > 71 + DIMENSIONS[0]) this.position.pos[0] = -71;
         if (this.rotation) this.rotation.angle += Math.PI * 0.5 * dt;
     }
 }
