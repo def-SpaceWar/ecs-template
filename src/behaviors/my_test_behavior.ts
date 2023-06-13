@@ -6,15 +6,24 @@ import { DIMENSIONS } from "../ecs/render/render_system";
 import { Rotation } from "../ecs/render/rotation";
 
 export class MyTestBehavior implements BehaviorInterface {
-    constructor(public entity: Entity) { }
+    position: Position | null = null;
+    rotation: Rotation | null = null;
+
+    firstTime = true;
+
+    constructor(public entity: Entity) {}
 
     update(components: Component[], dt: number) {
-        const position = getComponent(this.entity, Position, components);
-        if (position && position.pos[0] > 71 + DIMENSIONS[0]) {
-            position.pos[0] = -71;
+        if (this.firstTime) {
+            this.position = getComponent(this.entity, Position, components);
+            this.rotation = getComponent(this.entity, Rotation, components);
+            this.firstTime = false;
         }
 
-        const rotation = getComponent(this.entity, Rotation, components);
-        if (rotation) rotation.angle += Math.PI * 0.5 * dt;
+        if (this.position && this.position.pos[0] > 71 + DIMENSIONS[0]) {
+            this.position.pos[0] = -71;
+        }
+
+        if (this.rotation) this.rotation.angle += Math.PI * 0.5 * dt;
     }
 }
