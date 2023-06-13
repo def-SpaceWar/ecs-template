@@ -1,11 +1,13 @@
 import type { System } from "../system";
-import { type Vector2D, scale } from "../../util/vector";
+import { type Vector2D, Vector } from "../../util/vector";
 import { type Component, getComponent } from "../component";
 import { totalEntities } from "../entity";
 import { Color } from "./color";
 import { Position } from "../render/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
+
+import scale = Vector.scale;
 
 export const DIMENSIONS: Vector2D = [0, 0];
 

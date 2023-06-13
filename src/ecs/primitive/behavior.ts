@@ -8,6 +8,7 @@ export interface BehaviorConstructor {
 export interface BehaviorInterface {
     entity: Entity;
     update: (components: Component[], dt: number) => void;
+    onCollision?: (other: Entity, components: Component[]) => void;
 };
 
 export class Behavior implements Component {
