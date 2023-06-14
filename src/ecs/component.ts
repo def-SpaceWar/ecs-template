@@ -15,12 +15,12 @@ export function getComponent<T extends Component>(
     entity: Entity,
     Type: new (...args: any[]) => T,
     components: Component[]
-): T | null {
+): T | undefined {
     for (let i = 0; i < components.length; i++) {
         const component = components[i];
         if (component.entity == entity && isComponent(Type, component)) return component;
     }
-    return null;
+    return undefined;
 }
 
 export function getComponents<T extends Component>(

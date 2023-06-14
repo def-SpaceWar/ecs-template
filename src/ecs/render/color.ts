@@ -11,6 +11,9 @@ export class Color implements Component {
     ) { }
 
     toString() {
+        while (this.r > 255) this.r -= 255;
+        while (this.g > 255) this.g -= 255;
+        while (this.b > 255) this.b -= 255;
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`;
     }
 }
