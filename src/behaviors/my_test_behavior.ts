@@ -1,13 +1,13 @@
 import { getComponent, type Component } from "../ecs/component";
 import type { Entity } from "../ecs/entity";
-import { BehaviorClass } from "../ecs/primitive/behavior";
+import { BehaviorClass, type BehaviorInterface } from "../ecs/primitive/behavior";
 import { Name } from "../ecs/primitive/name";
 import { Color } from "../ecs/render/color";
 import { Position } from "../ecs/render/position";
 import { DIMENSIONS } from "../ecs/render/render_system";
 import { Rotation } from "../ecs/render/rotation";
 
-export class MyTestBehavior extends BehaviorClass {
+export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
     position: Position;
     rotation: Rotation;
     color: Color;
