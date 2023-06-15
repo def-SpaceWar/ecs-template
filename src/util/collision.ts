@@ -34,17 +34,14 @@ export function polygonCollisionResolution(c1: Vector2D, p1: Polygon, c2: Vector
             center2 = c2;
         }
 
-        // Check diagonals of this polygon...
         for (let p = 0; p < poly1.length; p++) {
             const line_r1s = center1;
             const line_r1e = poly1[p];
 
-            // ...against edges of this polygon
             for (let q = 0; q < poly2.length; q++) {
                 const line_r2s = poly2[q];
                 const line_r2e = poly2[(q + 1) % poly2.length];
 
-                // Standard "off the shelf" line segment intersection
                 const h = (line_r2e[0] - line_r2s[0]) * (line_r1s[1] - line_r1e[1]) - (line_r1s[0] - line_r1e[0]) * (line_r2e[1] - line_r2s[1]);
                 const t1 = ((line_r2s[1] - line_r2e[1]) * (line_r1s[0] - line_r2s[0]) + (line_r2e[0] - line_r2s[0]) * (line_r1s[1] - line_r2s[1])) / h;
                 const t2 = ((line_r1s[1] - line_r1e[1]) * (line_r1s[0] - line_r2s[0]) + (line_r1e[0] - line_r1s[0]) * (line_r1s[1] - line_r2s[1])) / h;
@@ -56,7 +53,6 @@ export function polygonCollisionResolution(c1: Vector2D, p1: Polygon, c2: Vector
         }
     }
 
-    // Cant overlap if static collision is resolved
     return totalDisplacement;
 }
 
