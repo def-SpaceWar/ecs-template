@@ -24,9 +24,9 @@ const wall = entity();
 components.push(new Name(wall, "Wall"));
 components.push(new Position(wall, 600, 300));
 components.push(new Color(wall, 0, 255, 0));
-components.push(new Rotation(wall, Math.PI / 4));
-components.push(new Rectangle(wall, 0, 0, 400, 100));
-components.push(new RectangleCollider(wall, 0, 0, 400, 100));
+components.push(new Rotation(wall, 0.3));
+components.push(new Rectangle(wall, 0, 0, 120, 920));
+components.push(new RectangleCollider(wall, 0, 0, 120, 920));
 
 const player = entity();
 components.push(new Name(player, "Player"));

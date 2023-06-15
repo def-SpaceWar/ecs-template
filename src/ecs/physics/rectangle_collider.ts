@@ -1,6 +1,12 @@
 import type { Component } from "../component";
 import type { Entity } from "../entity";
-import type { Vector2D } from "../../util/vector";
+import { Vector, type Vector2D } from "../../util/vector";
+import add = Vector.add;
+import scale = Vector.scale;
+import rotate = Vector.rotate;
+import type { Polygon } from "../../util/collision";
+import type { Position } from "../render/position";
+import type { Rotation } from "../render/rotation";
 
 export class RectangleCollider implements Component {
     pos: Vector2D;
@@ -11,3 +17,20 @@ export class RectangleCollider implements Component {
         this.dims = [w, h];
     }
 }
+
+export type RectInfo = [
+    Position,
+    RectangleCollider,
+    Rotation?
+];
+
+export const getRectPoints = (r: RectInfo): Polygon => {
+    const angle = r[2]?.angle || 0;
+    const rectCenter = add(r[0].pos, r[1].pos);
+    return [
+        rotate(add(rectCenter, scale(r[1].dims, 0.5)), angle, r[0].pos),
+        rotate(add(rectCenter, scale([-r[1].dims[0], r[1].dims[1]], 0.5)), angle, r[0].pos),
+        rotate(add(rectCenter, scale(r[1].dims, -0.5)), angle, r[0].pos),
+        rotate(add(rectCenter, scale([r[1].dims[0], -r[1].dims[1]], 0.5)), angle, r[0].pos)
+    ];
+};

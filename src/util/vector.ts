@@ -2,6 +2,9 @@ export type Vector2D = [number, number];
 export type Scalar = number;
 
 export namespace Vector {
+    export const clone = (v: Vector2D) =>
+        [v[0], v[1]];
+
     export const zero = (): Vector2D =>
         [0, 0];
 
@@ -49,4 +52,7 @@ export namespace Vector {
             Math.sin(angle) * difference[0] + Math.cos(angle) * difference[1]
         ], origin)
     };
+
+    export const normal = (v: Vector2D): Vector2D =>
+        [-v[1], v[0]];
 }

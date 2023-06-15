@@ -1,4 +1,4 @@
-import type { Vector2D } from "./vector";
+import { Vector, Vector2D } from "./vector";
 
 export type Polygon = Vector2D[];
 
@@ -16,6 +16,48 @@ export function arePolygonsColliding(p1: Polygon, p2: Polygon) {
     }
 
     return false;
+}
+
+export function polygonCollisionResolution(c1: Vector2D, p1: Polygon, c2: Vector2D, p2: Polygon) {
+    let poly1 = p1;
+    let center1 = c1;
+    let poly2 = p2;
+    let center2 = c2;
+
+    let totalDisplacement = Vector.zero();
+
+    for (let shape = 0; shape < 2; shape++) {
+        if (shape == 1) {
+            poly1 = p2;
+            center1 = c2;
+            poly2 = p1;
+            center2 = c2;
+        }
+
+        // Check diagonals of this polygon...
+        for (let p = 0; p < poly1.length; p++) {
+            const line_r1s = center1;
+            const line_r1e = poly1[p];
+
+            // ...against edges of this polygon
+            for (let q = 0; q < poly2.length; q++) {
+                const line_r2s = poly2[q];
+                const line_r2e = poly2[(q + 1) % poly2.length];
+
+                // Standard "off the shelf" line segment intersection
+                const h = (line_r2e[0] - line_r2s[0]) * (line_r1s[1] - line_r1e[1]) - (line_r1s[0] - line_r1e[0]) * (line_r2e[1] - line_r2s[1]);
+                const t1 = ((line_r2s[1] - line_r2e[1]) * (line_r1s[0] - line_r2s[0]) + (line_r2e[0] - line_r2s[0]) * (line_r1s[1] - line_r2s[1])) / h;
+                const t2 = ((line_r1s[1] - line_r1e[1]) * (line_r1s[0] - line_r2s[0]) + (line_r1e[0] - line_r1s[0]) * (line_r1s[1] - line_r2s[1])) / h;
+
+                if (t1 >= 0.0 && t1 < 1.0 && t2 >= 0.0 && t2 < 1.0) {
+                    totalDisplacement = Vector.add(Vector.scale(Vector.subtract(line_r1e, line_r1s), (1 - t1) * (shape == 0 ? -1 : +1)), totalDisplacement);
+                }
+            }
+        }
+    }
+
+    // Cant overlap if static collision is resolved
+    return totalDisplacement;
 }
 
 export function arePolygonAndLineColliding(polygon: Polygon, p1: Vector2D, p2: Vector2D) {

@@ -2,35 +2,31 @@ import { type Component, getComponent, getComponents } from "../component";
 import { totalEntities } from "../entity";
 import { Position } from "../render/position";
 import type { System } from "../system";
-import { Vector, Vector2D } from "../../util/vector";
-import add = Vector.add;
-import scale = Vector.scale;
-import rotate = Vector.rotate;
+import { Vector } from "../../util/vector";
 import { Velocity } from "./velocity";
-import { RectangleCollider } from "./rectangle_collider";
+import { type RectInfo, RectangleCollider, getRectPoints } from "./rectangle_collider";
 import { Rotation } from "../render/rotation";
-import { arePolygonsColliding } from "../../util/collision";
+import { arePolygonsColliding, polygonCollisionResolution } from "../../util/collision";
 import { Behavior } from "../primitive/behavior";
-
-type RectInfo = [
-    Position,
-    RectangleCollider,
-    Rotation?
-];
-
-const getRectPoints = (r: RectInfo): Vector2D[] => {
-    const angle = r[2]?.angle || 0;
-    const rectCenter = add(r[0].pos, r[1].pos);
-    return [
-        rotate(add(rectCenter, scale(r[1].dims, 0.5)), angle, r[0].pos),
-        rotate(add(rectCenter, scale([-r[1].dims[0], r[1].dims[1]], 0.5)), angle, r[0].pos),
-        rotate(add(rectCenter, scale(r[1].dims, -0.5)), angle, r[0].pos),
-        rotate(add(rectCenter, scale([r[1].dims[0], -r[1].dims[1]], 0.5)), angle, r[0].pos)
-    ];
-};
 
 const areRectsColliding = (r1: RectInfo, r2: RectInfo) =>
     arePolygonsColliding(getRectPoints(r1), getRectPoints(r2));
+
+const stopRectsColliding = (r1: RectInfo, r2: RectInfo, components: Component[]) => {
+    let kb1 = 0, kb2 = 0;
+
+    if (getComponent(r1[0].entity, Velocity, components)) kb1 = 1;
+    if (getComponent(r2[0].entity, Velocity, components)) kb2 = 1;
+
+    // mass component soon!
+
+    if (kb1 == 0 && kb2 == 0) kb1 = 0.5, kb2 = 0.5;
+    [kb1, kb2] = Vector.normalize([kb1, kb2]);
+
+    const d = polygonCollisionResolution(r1[0].pos, getRectPoints(r1), r2[0].pos, getRectPoints(r2));
+    r1[0].pos = Vector.add(r1[0].pos, Vector.scale(d, kb1));
+    r2[0].pos = Vector.add(r2[0].pos, Vector.scale(d, -kb2));
+};
 
 const updateVelocities = (components: Component[], dt: number) => {
     for (let e = 0; e < totalEntities(); e++) {
@@ -38,22 +34,10 @@ const updateVelocities = (components: Component[], dt: number) => {
         if (velocity) {
             const position = getComponent(e, Position, components);
             if (position) {
-                position.pos = add(position.pos, scale(velocity.vel, dt));
+                position.pos = Vector.add(position.pos, Vector.scale(velocity.vel, dt));
             }
         }
     }
-};
-
-type RectCollisionInfo = [
-    Position,
-    RectangleCollider,
-    Velocity?
-];
-
-const stopRectsColliding = (r1: RectCollisionInfo, r2: RectCollisionInfo) => {
-    r1;
-    r2;
-    // watch that OLC video on polygon collision handling and stuff
 };
 
 const checkCollisions = (components: Component[], dt: number) => {
@@ -95,17 +79,15 @@ const checkCollisions = (components: Component[], dt: number) => {
                 }
             });
 
-            const velocity1 = getComponent(e1, Velocity, components);
-            const velocity2 = getComponent(e2, Velocity, components);
             stopRectsColliding([
                 position1,
                 rectCollider1,
-                velocity1
+                rotation1
             ], [
                 position2,
                 rectCollider2,
-                velocity2
-            ]);
+                rotation2
+            ], components);
         }
     }
 };
