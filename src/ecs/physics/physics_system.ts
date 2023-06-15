@@ -44,50 +44,55 @@ const checkCollisions = (components: Component[], dt: number) => {
     for (let e1 = 0; e1 < totalEntities(); e1++) {
         const position1 = getComponent(e1, Position, components);
         const rotation1 = getComponent(e1, Rotation, components);
-        const rectCollider1 = getComponent(e1, RectangleCollider, components);
-        if (!(position1 && rectCollider1)) continue;
+        const rectCollider1s = getComponents(e1, RectangleCollider, components);
+        for (let i = 0; i < rectCollider1s.length; i++) {
+            const rectCollider1 = rectCollider1s[i];
+            if (!(position1 && rectCollider1)) continue;
+            for (let e2 = e1 + 1; e2 < totalEntities(); e2++) {
+                const position2 = getComponent(e2, Position, components);
+                const rotation2 = getComponent(e2, Rotation, components);
+                const rectCollider2s = getComponents(e2, RectangleCollider, components);
+                for (let j = 0; j < rectCollider2s.length; j++) {
+                    const rectCollider2 = rectCollider2s[j];
+                    if (!(position2 && rectCollider2)) continue;
 
-        for (let e2 = e1 + 1; e2 < totalEntities(); e2++) {
-            const position2 = getComponent(e2, Position, components);
-            const rotation2 = getComponent(e2, Rotation, components);
-            const rectCollider2 = getComponent(e2, RectangleCollider, components);
-            if (!(position2 && rectCollider2)) continue;
+                    if (
+                        !areRectsColliding([
+                            position1,
+                            rectCollider1,
+                            rotation1
+                        ], [
+                            position2,
+                            rectCollider2,
+                            rotation2
+                        ])
+                    ) continue;
 
-            if (
-                !areRectsColliding([
-                    position1,
-                    rectCollider1,
-                    rotation1
-                ], [
-                    position2,
-                    rectCollider2,
-                    rotation2
-                ])
-            ) continue;
+                    const behaviors1 = getComponents(e1, Behavior, components);
+                    behaviors1.forEach(b => {
+                        if (b.behavior.onCollision) {
+                            b.behavior.onCollision(e2, components, dt);
+                        }
+                    });
 
-            const behaviors1 = getComponents(e1, Behavior, components);
-            behaviors1.forEach(b => {
-                if (b.behavior.onCollision) {
-                    b.behavior.onCollision(e2, components, dt);
+                    const behaviors2 = getComponents(e2, Behavior, components);
+                    behaviors2.forEach(b => {
+                        if (b.behavior.onCollision) {
+                            b.behavior.onCollision(e1, components, dt);
+                        }
+                    });
+
+                    stopRectsColliding([
+                        position1,
+                        rectCollider1,
+                        rotation1
+                    ], [
+                        position2,
+                        rectCollider2,
+                        rotation2
+                    ], components);
                 }
-            });
-
-            const behaviors2 = getComponents(e2, Behavior, components);
-            behaviors2.forEach(b => {
-                if (b.behavior.onCollision) {
-                    b.behavior.onCollision(e1, components, dt);
-                }
-            });
-
-            stopRectsColliding([
-                position1,
-                rectCollider1,
-                rotation1
-            ], [
-                position2,
-                rectCollider2,
-                rotation2
-            ], components);
+            }
         }
     }
 };

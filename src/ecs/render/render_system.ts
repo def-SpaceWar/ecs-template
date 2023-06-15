@@ -1,6 +1,6 @@
 import type { System } from "../system";
 import { type Vector2D, Vector } from "../../util/vector";
-import { type Component, getComponent } from "../component";
+import { type Component, getComponent, getComponents } from "../component";
 import { totalEntities } from "../entity";
 import { Color } from "./color";
 import { Position } from "../render/position";
@@ -32,9 +32,9 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (let e = 0; e < totalEntities(); e++) {
-            const rect = getComponent(e, Rectangle, components);
+            const rects = getComponents(e, Rectangle, components);
 
-            if (rect) {
+            if (rects[0]) {
                 const position = getComponent(e, Position, components);
                 const pos: Vector2D = position ? position.pos : [0, 0];
 
@@ -46,14 +46,16 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
 
                 //const isCamera = !!getComponent(e, 'isCamera', components);
 
-                ctx.save();
-                // if (isCamera) ctx.translate(...'findthecamerasomehow'.pos);
-                ctx.translate(...pos);
-                ctx.rotate(angle);
-                ctx.fillStyle = fillStyle;
-                ctx.translate(...scale(rect.dims, -0.5));
-                ctx.fillRect(...rect.pos, ...rect.dims);
-                ctx.restore();
+                for (let i = 0; i < rects.length; i++) {
+                    ctx.save();
+                    // if (isCamera) ctx.translate(...'findthecamerasomehow'.pos);
+                    ctx.translate(...pos);
+                    ctx.rotate(angle);
+                    ctx.fillStyle = fillStyle;
+                    ctx.translate(...scale(rects[i].dims, -0.5));
+                    ctx.fillRect(...rects[i].pos, ...rects[i].dims);
+                    ctx.restore();
+                }
             }
         }
     };
