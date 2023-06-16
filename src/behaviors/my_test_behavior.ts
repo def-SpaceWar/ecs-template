@@ -6,7 +6,9 @@ import { Name } from "../ecs/primitive/name";
 import { Position } from "../ecs/render/position";
 import { DIMENSIONS } from "../ecs/render/render_system";
 import { Rotation } from "../ecs/render/rotation";
+import { Scenes } from "../main";
 import { Input } from "../util/input";
+import { SceneManager } from "../util/scene_manager";
 import { Vector } from "../util/vector";
 
 export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
@@ -23,7 +25,7 @@ export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
     }
 
     update(_components: Component[], dt: number) {
-        //this.rotation.angle += Math.PI * 0.1 * dt;
+        this.rotation.angle += Math.PI * 0.1 * dt;
         if (this.position.pos[0] > 71 + DIMENSIONS[0]) this.position.pos[0] = -71;
         if (this.position.pos[0] < -71) this.position.pos[0] = 71 + DIMENSIONS[0];
 

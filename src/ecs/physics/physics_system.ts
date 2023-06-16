@@ -1,5 +1,5 @@
 import { type Component, getComponent, getComponents } from "../component";
-import type { Scene } from "../entity";
+import type { Scene } from "../../util/scene_manager";
 import { Position } from "../render/position";
 import type { System } from "../system";
 import { Vector } from "../../util/vector";
@@ -9,29 +9,31 @@ import { Rotation } from "../render/rotation";
 import { arePolygonsColliding, polygonCollisionResolution } from "../../util/collision";
 import { Behavior } from "../primitive/behavior";
 import { Acceleration } from "./acceleration";
+import add = Vector.add;
+import scale = Vector.scale;
 
-const updateVelocities = (components: Component[], scene: Scene, dt: number) => {
+const updateVelocities = (scene: Scene, dt: number) => {
     for (let e = 0; e < scene.totalEntities(); e++) {
-        const velocity = getComponent(e, Velocity, components);
+        const velocity = getComponent(e, Velocity, scene.components);
         if (!velocity) continue;
-        const position = getComponent(e, Position, components);
+        const position = getComponent(e, Position, scene.components);
         if (position) {
-            position.pos = Vector.add(position.pos, Vector.scale(velocity.vel, dt));
+            position.pos = add(position.pos, scale(velocity.vel, dt));
         }
 
-        const acceleration = getComponent(e, Acceleration, components);
+        const acceleration = getComponent(e, Acceleration, scene.components);
         if (acceleration) {
-            velocity.vel = Vector.add(Vector.scale(acceleration.acc, dt), velocity.vel);
+            velocity.vel = add(scale(acceleration.acc, dt), velocity.vel);
         }
 
-        velocity.vel = Vector.scale(velocity.vel, Math.exp(-dt));
+        velocity.vel = scale(velocity.vel, Math.exp(-dt));
     }
 };
 
 const areRectsColliding = (r1: RectInfo, r2: RectInfo) =>
     arePolygonsColliding(getRectPoints(r1), getRectPoints(r2));
 
-const stopRectsColliding = (r1: RectInfo, r2: RectInfo, components: Component[], dt: number) => {
+const stopRectsColliding = (r1: RectInfo, r2: RectInfo, components: Component[]) => {
     let kb1 = 0, kb2 = 0;
 
     const v1 = getComponent(r1[0].entity, Velocity, components);
@@ -48,18 +50,18 @@ const stopRectsColliding = (r1: RectInfo, r2: RectInfo, components: Component[],
     r2[0].pos = Vector.add(r2[0].pos, Vector.scale(d, -kb2));
 };
 
-const checkCollisions = (components: Component[], scene: Scene, dt: number) => {
+const checkCollisions = (scene: Scene, dt: number) => {
     for (let e1 = 0; e1 < scene.totalEntities(); e1++) {
-        const position1 = getComponent(e1, Position, components);
-        const rotation1 = getComponent(e1, Rotation, components);
-        const rectCollider1s = getComponents(e1, RectangleCollider, components);
+        const position1 = getComponent(e1, Position, scene.components);
+        const rotation1 = getComponent(e1, Rotation, scene.components);
+        const rectCollider1s = getComponents(e1, RectangleCollider, scene.components);
         for (let i = 0; i < rectCollider1s.length; i++) {
             const rectCollider1 = rectCollider1s[i];
             if (!(position1 && rectCollider1)) continue;
             for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
-                const position2 = getComponent(e2, Position, components);
-                const rotation2 = getComponent(e2, Rotation, components);
-                const rectCollider2s = getComponents(e2, RectangleCollider, components);
+                const position2 = getComponent(e2, Position, scene.components);
+                const rotation2 = getComponent(e2, Rotation, scene.components);
+                const rectCollider2s = getComponents(e2, RectangleCollider, scene.components);
                 for (let j = 0; j < rectCollider2s.length; j++) {
                     const rectCollider2 = rectCollider2s[j];
                     if (!(position2 && rectCollider2)) continue;
@@ -76,17 +78,17 @@ const checkCollisions = (components: Component[], scene: Scene, dt: number) => {
                         ])
                     ) continue;
 
-                    const behaviors1 = getComponents(e1, Behavior, components);
+                    const behaviors1 = getComponents(e1, Behavior, scene.components);
                     behaviors1.forEach(b => {
                         if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e2, components, dt);
+                            b.behavior.onCollision(e2, scene.components, dt);
                         }
                     });
 
-                    const behaviors2 = getComponents(e2, Behavior, components);
+                    const behaviors2 = getComponents(e2, Behavior, scene.components);
                     behaviors2.forEach(b => {
                         if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e1, components, dt);
+                            b.behavior.onCollision(e1, scene.components, dt);
                         }
                     });
 
@@ -98,7 +100,7 @@ const checkCollisions = (components: Component[], scene: Scene, dt: number) => {
                         position2,
                         rectCollider2,
                         rotation2
-                    ], components, dt);
+                    ], scene.components);
                 }
             }
         }
@@ -106,8 +108,8 @@ const checkCollisions = (components: Component[], scene: Scene, dt: number) => {
 };
 
 export function createPhysicsSystem(): System {
-    return (components: Component[], scene: Scene, dt: number) => {
-        updateVelocities(components, scene, dt);
-        checkCollisions(components, scene, dt);
+    return (scene: Scene, dt: number) => {
+        updateVelocities(scene, dt);
+        checkCollisions(scene, dt);
     };
 }

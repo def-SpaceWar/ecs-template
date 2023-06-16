@@ -1,4 +1,3 @@
-import type { Component } from "./component";
-import type { Scene } from "./entity";
+import type { Scene } from "../util/scene_manager";
 
-export type System = (components: Component[], scene: Scene, dt: number) => void;
+export type System = (scene: Scene, dt: number) => void;

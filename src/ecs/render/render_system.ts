@@ -1,14 +1,12 @@
 import type { System } from "../system";
 import { type Vector2D, Vector } from "../../util/vector";
-import { type Component, getComponent, getComponents } from "../component";
-import { type Scene } from "../entity";
 import { Color } from "./color";
 import { Position } from "../render/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
-
-import scale = Vector.scale;
+import { type Scene } from "../../util/scene_manager";
 import { HEIGHT, WIDTH } from "../../main";
+import { getComponent, getComponents } from "../component";
 
 export const DIMENSIONS: Vector2D = [0, 0];
 
@@ -29,21 +27,21 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         });
     }
 
-    return (components: Component[], scene: Scene, _dt: number) => {
+    return (scene: Scene, _dt: number) => {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (let e = 0; e < scene.totalEntities(); e++) {
-            const rects = getComponents(e, Rectangle, components);
+            const rects = getComponents(e, Rectangle, scene.components);
             if (!rects[0]) continue;
 
-            const position = getComponent(e, Position, components);
+            const position = getComponent(e, Position, scene.components);
             const pos: Vector2D = position ? position.pos : [0, 0];
             const isWorldSpace = position?.isWorldSpace || false;
 
-            const color = getComponent(e, Color, components);
+            const color = getComponent(e, Color, scene.components);
             const fillStyle = color ? color.toString() : 'black';
 
-            const rotation = getComponent(e, Rotation, components);
+            const rotation = getComponent(e, Rotation, scene.components);
             const angle = rotation ? rotation.angle : 0;
 
             ctx.save();
@@ -52,12 +50,12 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
             if (isWorldSpace) {
                 ctx.translate(WIDTH / 2, HEIGHT / 2)
                 const cameraPos: Vector2D = [400, 400];
-                ctx.translate(...scale(cameraPos, -1));
+                ctx.translate(...Vector.scale(cameraPos, -1));
             }
             ctx.rotate(angle);
             for (let i = 0; i < rects.length; i++) {
                 ctx.save();
-                ctx.translate(...scale(rects[i].dims, -0.5));
+                ctx.translate(...Vector.scale(rects[i].dims, -0.5));
                 ctx.fillRect(...rects[i].pos, ...rects[i].dims);
                 ctx.restore();
             }
