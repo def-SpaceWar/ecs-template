@@ -1,5 +1,5 @@
 import { type Component, getComponent, getComponents } from "../component";
-import { totalEntities } from "../entity";
+import type { Scene } from "../entity";
 import { Position } from "../render/position";
 import type { System } from "../system";
 import { Vector } from "../../util/vector";
@@ -8,47 +8,55 @@ import { type RectInfo, RectangleCollider, getRectPoints } from "./rectangle_col
 import { Rotation } from "../render/rotation";
 import { arePolygonsColliding, polygonCollisionResolution } from "../../util/collision";
 import { Behavior } from "../primitive/behavior";
+import { Acceleration } from "./acceleration";
+
+const updateVelocities = (components: Component[], scene: Scene, dt: number) => {
+    for (let e = 0; e < scene.totalEntities(); e++) {
+        const velocity = getComponent(e, Velocity, components);
+        if (!velocity) continue;
+        const position = getComponent(e, Position, components);
+        if (position) {
+            position.pos = Vector.add(position.pos, Vector.scale(velocity.vel, dt));
+        }
+
+        const acceleration = getComponent(e, Acceleration, components);
+        if (acceleration) {
+            velocity.vel = Vector.add(Vector.scale(acceleration.acc, dt), velocity.vel);
+        }
+
+        velocity.vel = Vector.scale(velocity.vel, Math.exp(-dt));
+    }
+};
 
 const areRectsColliding = (r1: RectInfo, r2: RectInfo) =>
     arePolygonsColliding(getRectPoints(r1), getRectPoints(r2));
 
-const stopRectsColliding = (r1: RectInfo, r2: RectInfo, components: Component[]) => {
+const stopRectsColliding = (r1: RectInfo, r2: RectInfo, components: Component[], dt: number) => {
     let kb1 = 0, kb2 = 0;
 
-    if (getComponent(r1[0].entity, Velocity, components)) kb1 = 1;
-    if (getComponent(r2[0].entity, Velocity, components)) kb2 = 1;
+    const v1 = getComponent(r1[0].entity, Velocity, components);
+    if (v1) kb1 = 1;
+    const v2 = getComponent(r2[0].entity, Velocity, components);
+    if (v2) kb2 = 1;
 
     // mass component soon!
 
     if (kb1 == 0 && kb2 == 0) kb1 = 0.5, kb2 = 0.5;
-    [kb1, kb2] = Vector.normalize([kb1, kb2]);
 
     const d = polygonCollisionResolution(r1[0].pos, getRectPoints(r1), r2[0].pos, getRectPoints(r2));
     r1[0].pos = Vector.add(r1[0].pos, Vector.scale(d, kb1));
     r2[0].pos = Vector.add(r2[0].pos, Vector.scale(d, -kb2));
 };
 
-const updateVelocities = (components: Component[], dt: number) => {
-    for (let e = 0; e < totalEntities(); e++) {
-        const velocity = getComponent(e, Velocity, components);
-        if (velocity) {
-            const position = getComponent(e, Position, components);
-            if (position) {
-                position.pos = Vector.add(position.pos, Vector.scale(velocity.vel, dt));
-            }
-        }
-    }
-};
-
-const checkCollisions = (components: Component[], dt: number) => {
-    for (let e1 = 0; e1 < totalEntities(); e1++) {
+const checkCollisions = (components: Component[], scene: Scene, dt: number) => {
+    for (let e1 = 0; e1 < scene.totalEntities(); e1++) {
         const position1 = getComponent(e1, Position, components);
         const rotation1 = getComponent(e1, Rotation, components);
         const rectCollider1s = getComponents(e1, RectangleCollider, components);
         for (let i = 0; i < rectCollider1s.length; i++) {
             const rectCollider1 = rectCollider1s[i];
             if (!(position1 && rectCollider1)) continue;
-            for (let e2 = e1 + 1; e2 < totalEntities(); e2++) {
+            for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
                 const position2 = getComponent(e2, Position, components);
                 const rotation2 = getComponent(e2, Rotation, components);
                 const rectCollider2s = getComponents(e2, RectangleCollider, components);
@@ -90,7 +98,7 @@ const checkCollisions = (components: Component[], dt: number) => {
                         position2,
                         rectCollider2,
                         rotation2
-                    ], components);
+                    ], components, dt);
                 }
             }
         }
@@ -98,8 +106,8 @@ const checkCollisions = (components: Component[], dt: number) => {
 };
 
 export function createPhysicsSystem(): System {
-    return (components: Component[], dt: number) => {
-        updateVelocities(components, dt);
-        checkCollisions(components, dt);
+    return (components: Component[], scene: Scene, dt: number) => {
+        updateVelocities(components, scene, dt);
+        checkCollisions(components, scene, dt);
     };
 }

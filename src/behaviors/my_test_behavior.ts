@@ -13,7 +13,7 @@ export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
     position: Position;
     rotation: Rotation;
     velocity: Velocity;
-    speed = 200;
+    speed = 500;
     direction = Vector.zero();
 
     start(components: Component[]): void {
@@ -23,8 +23,9 @@ export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
     }
 
     update(_components: Component[], dt: number) {
-        this.rotation.angle += Math.PI * 0.1 * dt;
+        //this.rotation.angle += Math.PI * 0.1 * dt;
         if (this.position.pos[0] > 71 + DIMENSIONS[0]) this.position.pos[0] = -71;
+        if (this.position.pos[0] < -71) this.position.pos[0] = 71 + DIMENSIONS[0];
 
         this.direction = [0, 0];
         if (Input.getKey("a")) {
@@ -40,7 +41,7 @@ export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
             this.direction[1] += 1;
         }
 
-        this.velocity.vel = Vector.scale(this.direction, this.speed)
+        this.velocity.vel = Vector.add(Vector.scale(this.direction, this.speed * dt), this.velocity.vel);
     }
 
     onCollision(other: Entity, components: Component[], _dt: number) {
