@@ -1,12 +1,10 @@
 import type { Component } from "../component";
 import type { Entity } from "../entity";
 import { Vector, type Vector2D } from "../../util/vector";
-import add = Vector.add;
-import scale = Vector.scale;
-import rotate = Vector.rotate;
 import type { Polygon } from "../../util/collision";
 import type { Position } from "../render/position";
 import type { Rotation } from "../render/rotation";
+import { ERROR_MARGIN } from "../../game";
 
 export class RectangleCollider implements Component {
     pos: Vector2D;
@@ -26,11 +24,33 @@ export type RectInfo = [
 
 export const getRectPoints = (r: RectInfo): Polygon => {
     const angle = r[2]?.angle || 0;
-    const rectCenter = add(r[0].pos, r[1].pos);
+    const rectCenter = Vector.add(r[0].pos, r[1].pos);
     return [
-        rotate(add(rectCenter, scale(r[1].dims, 0.5)), angle, r[0].pos),
-        rotate(add(rectCenter, scale([-r[1].dims[0], r[1].dims[1]], 0.5)), angle, r[0].pos),
-        rotate(add(rectCenter, scale(r[1].dims, -0.5)), angle, r[0].pos),
-        rotate(add(rectCenter, scale([r[1].dims[0], -r[1].dims[1]], 0.5)), angle, r[0].pos)
+        Vector.rotate(Vector.add(rectCenter, Vector.scale(r[1].dims, 0.5)), angle, r[0].pos),
+        Vector.rotate(Vector.add(rectCenter, Vector.scale([-r[1].dims[0], r[1].dims[1]], 0.5)), angle, r[0].pos),
+        Vector.rotate(Vector.add(rectCenter, Vector.scale(r[1].dims, -0.5)), angle, r[0].pos),
+        Vector.rotate(Vector.add(rectCenter, Vector.scale([r[1].dims[0], -r[1].dims[1]], 0.5)), angle, r[0].pos)
     ];
+};
+
+export const getRectNormal = (r1: [Position, RectangleCollider], r2: [Position, RectangleCollider]): Vector2D => {
+    const normal: Vector2D = [0, 0];
+    const pos1 = Vector.add(r1[0].pos, r1[1].pos);
+    const dims1 = r1[1].dims;
+    const pos2 = Vector.add(r2[0].pos, r2[1].pos);
+    const dims2 = r2[1].dims;
+
+    if (pos1[0] + dims1[0] / 2 - ERROR_MARGIN < pos2[0] - dims2[0] / 2) {
+        normal[0] = -1;
+    } else if (pos1[0] - dims1[0] / 2 + ERROR_MARGIN > pos2[0] + dims2[0] / 2) {
+        normal[0] = 1;
+    }
+
+    if (pos1[1] + dims1[1] / 2 - ERROR_MARGIN < pos2[1] - dims2[1] / 2) {
+        normal[1] = -1;
+    } else if (pos1[1] - dims1[1] / 2 + ERROR_MARGIN > pos2[1] + dims2[1] / 2) {
+        normal[1] = 1;
+    }
+
+    return Vector.normalize(normal);
 };

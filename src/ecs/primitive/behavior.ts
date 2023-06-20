@@ -1,6 +1,7 @@
 import { SceneManager } from "../../util/scene_manager";
-import { Component, isComponent } from "../component";
+import { type Component, getComponent, isComponent } from "../component";
 import type { Entity } from "../entity";
+import { Name } from "./name";
 
 export class Behavior implements Component {
     behavior: BehaviorInterface;
@@ -67,4 +68,16 @@ export function getBehavior<T extends BehaviorInterface>(
         ) return component.behavior;
     }
     return undefined;
+}
+
+export function requireComponent<T extends Component>(
+    entity: Entity,
+    Type: new (...args: any[]) => T,
+    components: Component[] = SceneManager.currentScene.components
+): T | undefined {
+    for (let i = 0; i < components.length; i++) {
+        const component = components[i];
+        if (component.entity == entity && isComponent(Type, component)) return;
+    }
+    throw new Error(`Component not found! ${entity} ${getComponent(entity, Name)?.name} ${Type}`);
 }

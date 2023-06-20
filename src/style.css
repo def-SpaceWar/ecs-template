@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata&display=swap');
+
 body {
     background-color: black;
-    font-family: sans;
+    font-family: 'Inconsolata', monospace;
 }
 
 canvas {
@@ -8,14 +10,23 @@ canvas {
     left: 50vw;
     top: 50vh;
     transform: translate(-50%, -50%);
+    z-index: -1;
 }
 
 #fps {
     color: #FF0000;
+    background-color: black;
+    display: inline;
     font-size: 200%;
+    padding: 0px;
+    margin: 10px;
 }
 
 #tps {
     color: #00FFFF;
+    background-color: black;
+    display: inline;
     font-size: 200%;
+    padding: 0px;
+    margin: 10px;
 }

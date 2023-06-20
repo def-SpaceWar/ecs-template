@@ -32,8 +32,18 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
     );
     fpsText.id = "fps";
 
+    const fpsCounts: number[] = [];
+    const average = () => {
+        if (fpsCounts.length > 25) fpsCounts.shift();
+        const total = fpsCounts.reduce((p, v) => v + p, 0);
+        return Math.floor(total / fpsCounts.length);
+    },
+        max = () => Math.floor(Math.max(...fpsCounts)),
+        min = () => Math.floor(Math.min(...fpsCounts));
+
     return (scene: Scene, dt: number) => {
-        fpsText.innerText = `FPS: ${Math.floor(1 / dt)}`;
+        fpsCounts.push(1 / dt);
+        fpsText.innerText = `FPS: ${average()}; [${min()}, ${max()}]`;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (let e = 0; e < scene.totalEntities(); e++) {

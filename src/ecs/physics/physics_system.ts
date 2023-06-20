@@ -4,14 +4,14 @@ import { Position } from "../render/position";
 import type { System } from "../system";
 import { Vector } from "../../util/vector";
 import { Velocity } from "./velocity";
-import { type RectInfo, RectangleCollider, getRectPoints } from "./rectangle_collider";
+import { type RectInfo, RectangleCollider, getRectPoints, getRectNormal } from "./rectangle_collider";
 import { Rotation } from "../render/rotation";
-import { arePolygonsColliding, polygonCollisionResolution } from "../../util/collision";
+import { arePolygonsColliding, collisionResolution } from "../../util/collision";
 import { Behavior } from "../primitive/behavior";
 import { Acceleration } from "./acceleration";
-import add = Vector.add;
-import scale = Vector.scale;
 import { Drag } from "./drag";
+import { Mass } from "./mass";
+import { Restitution } from "./restitution";
 
 const updateVelocities = (scene: Scene, dt: number) => {
     for (let e = 0; e < scene.totalEntities(); e++) {
@@ -19,17 +19,17 @@ const updateVelocities = (scene: Scene, dt: number) => {
         if (!velocity) continue;
         const position = getComponent(e, Position);
         if (position) {
-            position.pos = add(position.pos, scale(velocity.vel, dt));
+            position.pos = Vector.add(position.pos, Vector.scale(velocity.vel, dt));
         }
 
         const acceleration = getComponent(e, Acceleration);
         if (acceleration) {
-            velocity.vel = add(scale(acceleration.acc, dt), velocity.vel);
+            velocity.vel = Vector.add(Vector.scale(acceleration.acc, dt), velocity.vel);
         }
 
         const drag = getComponent(e, Drag);
         if (drag) {
-            velocity.vel = scale(velocity.vel, Math.exp(dt * Math.log(drag.drag)));
+            velocity.vel = Vector.scale(velocity.vel, Math.exp(dt * Math.log(drag.drag)));
         }
     }
 };
@@ -37,38 +37,23 @@ const updateVelocities = (scene: Scene, dt: number) => {
 const areRectsColliding = (r1: RectInfo, r2: RectInfo) =>
     arePolygonsColliding(getRectPoints(r1), getRectPoints(r2));
 
-const stopRectsColliding = (r1: RectInfo, r2: RectInfo) => {
-    let kb1 = 0, kb2 = 0;
-
-    const v1 = getComponent(r1[0].entity, Velocity);
-    if (v1) kb1 = 1;
-    const v2 = getComponent(r2[0].entity, Velocity);
-    if (v2) kb2 = 1;
-
-    // mass component soon!
-
-    if (kb1 == 0 && kb2 == 0) kb1 = 0.5, kb2 = 0.5;
-
-    const d = polygonCollisionResolution(r1[0].pos, getRectPoints(r1), r2[0].pos, getRectPoints(r2));
-    r1[0].pos = Vector.add(r1[0].pos, Vector.scale(d, kb1 * 0.5));
-    r2[0].pos = Vector.add(r2[0].pos, Vector.scale(d, -kb2 * 0.5));
-};
-
 const updateCollisions = (scene: Scene) => {
     for (let e1 = 0; e1 < scene.totalEntities(); e1++) {
         const position1 = getComponent(e1, Position);
+        const velocity1 = getComponent(e1, Velocity);
         const rotation1 = getComponent(e1, Rotation);
         const rectCollider1s = getComponents(e1, RectangleCollider);
         for (let i = 0; i < rectCollider1s.length; i++) {
             const rectCollider1 = rectCollider1s[i];
-            if (!(position1 && rectCollider1)) continue;
+            if (!(position1 && rectCollider1 && velocity1)) continue;
             for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
                 const position2 = getComponent(e2, Position);
+                const velocity2 = getComponent(e2, Velocity);
                 const rotation2 = getComponent(e2, Rotation);
                 const rectCollider2s = getComponents(e2, RectangleCollider);
                 for (let j = 0; j < rectCollider2s.length; j++) {
                     const rectCollider2 = rectCollider2s[j];
-                    if (!(position2 && rectCollider2)) continue;
+                    if (!(position2 && rectCollider2 && velocity2)) continue;
 
                     if (
                         !areRectsColliding([
@@ -96,15 +81,22 @@ const updateCollisions = (scene: Scene) => {
                         }
                     });
 
-                    stopRectsColliding([
+                    let normal = getRectNormal(
+                        [position1, rectCollider1],
+                        [position2, rectCollider2]
+                    );
+
+                    collisionResolution([
                         position1,
-                        rectCollider1,
-                        rotation1
+                        velocity1,
+                        getComponent(e1, Mass),
+                        getComponent(e1, Restitution)
                     ], [
                         position2,
-                        rectCollider2,
-                        rotation2
-                    ]);
+                        velocity2,
+                        getComponent(e2, Mass),
+                        getComponent(e2, Restitution)
+                    ], normal);
                 }
             }
         }
@@ -117,8 +109,18 @@ export function createPhysicsSystem(): System {
     );
     tpsText.id = "tps";
 
+    const tpsCounts: number[] = [];
+    const average = () => {
+        if (tpsCounts.length > 100) tpsCounts.shift();
+        const total = tpsCounts.reduce((p, v) => v + p, 0);
+        return Math.floor(total / tpsCounts.length);
+    },
+        max = () => Math.floor(Math.max(...tpsCounts)),
+        min = () => Math.floor(Math.min(...tpsCounts));
+
     return (scene: Scene, dt: number) => {
-        tpsText.innerText = `TPS: ${1 / dt}`;
+        tpsCounts.push(1 / dt);
+        tpsText.innerText = `TPS: ${average()}; [${min()}, ${max()}]`;
         updateVelocities(scene, dt);
         updateCollisions(scene);
     };

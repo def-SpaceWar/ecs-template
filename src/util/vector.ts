@@ -36,7 +36,7 @@ export namespace Vector {
         Math.sqrt(magnitudeSquared(v));
 
     export const normalize = (v: Vector2D): Vector2D =>
-        (v[0] == 0 && v[1] == 0) ? normalize([Math.random(), Math.random()])
+        (v[0] == 0 && v[1] == 0) ? random()
             : scale(v, 1 / magnitude(v));
 
     export const add = (v1: Vector2D, v2: Vector2D): Vector2D =>
