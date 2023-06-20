@@ -20,7 +20,7 @@ export interface BehaviorConstructor {
 export interface BehaviorInterface {
     entity: Entity;
     _update: (dt: number) => void;
-    onCollision?: (other: Entity, dt: number) => void;
+    onCollision?: (other: Entity) => void;
 };
 
 export abstract class BehaviorClass implements BehaviorInterface {
@@ -30,8 +30,7 @@ export abstract class BehaviorClass implements BehaviorInterface {
         public entity: Entity,
     ) {}
 
-    start(): void {
-    };
+    start(): void {};
 
     abstract update(dt: number): void;
 
@@ -43,10 +42,8 @@ export abstract class BehaviorClass implements BehaviorInterface {
         this.update(dt);
     }
 
-    onCollision(other: Entity, dt: number) {
-        other;
-        dt;
-    }
+    // @ts-ignore: parameter `other` not used
+    onCollision(other: Entity) {}
 }
 
 export function isBehavior<T extends BehaviorInterface>(

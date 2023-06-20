@@ -45,7 +45,7 @@ export class MyTestBehavior extends BehaviorClass {
         this.isGrounded = false;
     }
 
-    onCollision(other: Entity, _dt: number): void {
+    onCollision(other: Entity): void {
         const tags = getComponents(other, Tag);
         for (let i = 0; i < tags.length; i++) {
             if (tags[i].tag == "Platform") {

@@ -54,7 +54,7 @@ const stopRectsColliding = (r1: RectInfo, r2: RectInfo) => {
     r2[0].pos = Vector.add(r2[0].pos, Vector.scale(d, -kb2 * 0.5));
 };
 
-const checkCollisions = (scene: Scene, dt: number) => {
+const updateCollisions = (scene: Scene) => {
     for (let e1 = 0; e1 < scene.totalEntities(); e1++) {
         const position1 = getComponent(e1, Position);
         const rotation1 = getComponent(e1, Rotation);
@@ -85,14 +85,14 @@ const checkCollisions = (scene: Scene, dt: number) => {
                     const behaviors1 = getComponents(e1, Behavior);
                     behaviors1.forEach(b => {
                         if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e2, dt);
+                            b.behavior.onCollision(e2);
                         }
                     });
 
                     const behaviors2 = getComponents(e2, Behavior);
                     behaviors2.forEach(b => {
                         if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e1, dt);
+                            b.behavior.onCollision(e1);
                         }
                     });
 
@@ -120,6 +120,6 @@ export function createPhysicsSystem(): System {
     return (scene: Scene, dt: number) => {
         tpsText.innerText = `TPS: ${1 / dt}`;
         updateVelocities(scene, dt);
-        checkCollisions(scene, dt);
+        updateCollisions(scene);
     };
 }
