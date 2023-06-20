@@ -5,7 +5,7 @@ import { Position } from "../render/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
 import { type Scene } from "../../util/scene_manager";
-import { HEIGHT, WIDTH } from "../../main";
+import { HEIGHT, WIDTH } from "../../game";
 import { getComponent, getComponents } from "../component";
 
 export const DIMENSIONS: Vector2D = [0, 0];
@@ -27,21 +27,27 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         });
     }
 
-    return (scene: Scene, _dt: number) => {
+    const fpsText = document.getElementById('app')!.appendChild(
+        document.createElement('p')
+    );
+    fpsText.id = "fps";
+
+    return (scene: Scene, dt: number) => {
+        fpsText.innerText = `FPS: ${Math.floor(1 / dt)}`;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (let e = 0; e < scene.totalEntities(); e++) {
-            const rects = getComponents(e, Rectangle, scene.components);
+            const rects = getComponents(e, Rectangle);
             if (!rects[0]) continue;
 
-            const position = getComponent(e, Position, scene.components);
+            const position = getComponent(e, Position);
             const pos: Vector2D = position ? position.pos : [0, 0];
             const isWorldSpace = position?.isWorldSpace || false;
 
-            const color = getComponent(e, Color, scene.components);
+            const color = getComponent(e, Color);
             const fillStyle = color ? color.toString() : 'black';
 
-            const rotation = getComponent(e, Rotation, scene.components);
+            const rotation = getComponent(e, Rotation);
             const angle = rotation ? rotation.angle : 0;
 
             ctx.save();

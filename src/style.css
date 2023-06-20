@@ -1,7 +1,21 @@
+body {
+    background-color: black;
+    font-family: sans;
+}
+
 canvas {
     position: absolute;
     left: 50vw;
     top: 50vh;
     transform: translate(-50%, -50%);
-    background-color: black;
+}
+
+#fps {
+    color: #FF0000;
+    font-size: 200%;
+}
+
+#tps {
+    color: #00FFFF;
+    font-size: 200%;
 }

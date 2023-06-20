@@ -22,7 +22,6 @@ export function polygonCollisionResolution(c1: Vector2D, p1: Polygon, c2: Vector
     let poly1 = p1;
     let center1 = c1;
     let poly2 = p2;
-    let center2 = c2;
 
     let totalDisplacement = Vector.zero();
 
@@ -31,7 +30,6 @@ export function polygonCollisionResolution(c1: Vector2D, p1: Polygon, c2: Vector
             poly1 = p2;
             center1 = c2;
             poly2 = p1;
-            center2 = c2;
         }
 
         for (let p = 0; p < poly1.length; p++) {

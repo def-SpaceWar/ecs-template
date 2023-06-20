@@ -1,3 +1,4 @@
+import { SceneManager } from "../../util/scene_manager";
 import { Component, isComponent } from "../component";
 import type { Entity } from "../entity";
 
@@ -18,8 +19,8 @@ export interface BehaviorConstructor {
 
 export interface BehaviorInterface {
     entity: Entity;
-    _update: (components: Component[], dt: number) => void;
-    onCollision?: (other: Entity, components: Component[], dt: number) => void;
+    _update: (dt: number) => void;
+    onCollision?: (other: Entity, dt: number) => void;
 };
 
 export abstract class BehaviorClass implements BehaviorInterface {
@@ -29,15 +30,22 @@ export abstract class BehaviorClass implements BehaviorInterface {
         public entity: Entity,
     ) {}
 
-    abstract start(components: Component[]): void;
-    abstract update(components: Component[], dt: number): void;
+    start(): void {
+    };
 
-    _update(components: Component[], dt: number) {
+    abstract update(dt: number): void;
+
+    _update(dt: number) {
         if (this.init) {
-            this.start(components);
+            this.start();
             this.init = false;
         }
-        this.update(components, dt);
+        this.update(dt);
+    }
+
+    onCollision(other: Entity, dt: number) {
+        other;
+        dt;
     }
 }
 
@@ -51,7 +59,7 @@ export function isBehavior<T extends BehaviorInterface>(
 export function getBehavior<T extends BehaviorInterface>(
     entity: Entity,
     Type: new (entity: Entity) => T,
-    components: Component[]
+    components: Component[] = SceneManager.currentScene.components
 ): T | undefined {
     for (let i = 0; i < components.length; i++) {
         const component = components[i];

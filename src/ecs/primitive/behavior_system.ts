@@ -7,7 +7,7 @@ export function createBehaviorSystem(): System {
     return (scene: Scene, dt: number) => {
         scene.components.forEach(c => {
             if (isComponent(Behavior, c)) {
-                c.behavior._update(scene.components, dt);
+                c.behavior._update(dt);
             }
         });
     };

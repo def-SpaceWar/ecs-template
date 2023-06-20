@@ -1,52 +1,56 @@
-import { getComponent, type Component } from "../ecs/component";
-import type { Entity } from "../ecs/entity";
+import { getComponent, getComponents } from "../ecs/component";
 import { Velocity } from "../ecs/physics/velocity";
-import { BehaviorClass, type BehaviorInterface } from "../ecs/primitive/behavior";
-import { Name } from "../ecs/primitive/name";
+import { BehaviorClass } from "../ecs/primitive/behavior";
 import { Position } from "../ecs/render/position";
 import { DIMENSIONS } from "../ecs/render/render_system";
-import { Rotation } from "../ecs/render/rotation";
-import { Scenes } from "../main";
 import { Input } from "../util/input";
-import { SceneManager } from "../util/scene_manager";
 import { Vector } from "../util/vector";
+import add = Vector.add;
+import type { Entity } from "../ecs/entity";
+import { Tag } from "../ecs/primitive/tag";
 
-export class MyTestBehavior extends BehaviorClass implements BehaviorInterface {
+export class MyTestBehavior extends BehaviorClass {
     position: Position;
-    rotation: Rotation;
     velocity: Velocity;
-    speed = 500;
-    direction = Vector.zero();
+    speed = 1_000;
+    isGrounded = true;
+    jumpPower = 1_000;
 
-    start(components: Component[]): void {
-        this.position = getComponent(this.entity, Position, components)!;
-        this.rotation = getComponent(this.entity, Rotation, components)!;
-        this.velocity = getComponent(this.entity, Velocity, components)!;
+    start(): void {
+        this.position = getComponent(this.entity, Position)!;
+        this.velocity = getComponent(this.entity, Velocity)!;
     }
 
-    update(_components: Component[], dt: number) {
-        this.rotation.angle += Math.PI * 0.1 * dt;
+    update(dt: number): void {
         if (this.position.pos[0] > 71 + DIMENSIONS[0]) this.position.pos[0] = -71;
         if (this.position.pos[0] < -71) this.position.pos[0] = 71 + DIMENSIONS[0];
 
-        this.direction = [0, 0];
-        if (Input.getKey("a")) {
-            this.direction[0] -= 1;
-        }
-        if (Input.getKey("e") || Input.getKey("d")) {
-            this.direction[0] += 1;
-        }
-        if (Input.getKey(",") || Input.getKey("w")) {
-            this.direction[1] -= 1;
-        }
-        if (Input.getKey("o") || Input.getKey("s")) {
-            this.direction[1] += 1;
-        }
-
-        this.velocity.vel = Vector.add(Vector.scale(this.direction, this.speed * dt), this.velocity.vel);
+        if (Input.getKey("a")) this.moveLeft(dt);
+        if (Input.getKey("e") || Input.getKey("d")) this.moveRight(dt);
+        if (Input.getKey(",") || Input.getKey("w")) this.jump();
+        //if (Input.getKey("o") || Input.getKey("s")) this.direction[1] += 1;
     }
 
-    onCollision(other: Entity, components: Component[], _dt: number) {
-        console.log(getComponent(other, Name, components)?.name);
+    moveLeft(dt: number) {
+        this.velocity.vel = add(this.velocity.vel, [-this.speed * dt, 0]);
+    }
+
+    moveRight(dt: number) {
+        this.velocity.vel = add(this.velocity.vel, [this.speed * dt, 0]);
+    }
+
+    jump() {
+        if (!this.isGrounded) return;
+        this.velocity.vel = add(this.velocity.vel, [0, -this.jumpPower]);
+        this.isGrounded = false;
+    }
+
+    onCollision(other: Entity, _dt: number): void {
+        const tags = getComponents(other, Tag);
+        for (let i = 0; i < tags.length; i++) {
+            if (tags[i].tag == "Platform") {
+                this.isGrounded = true;
+            }
+        }
     }
 }
