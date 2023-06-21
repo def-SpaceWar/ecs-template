@@ -17,8 +17,6 @@ import { Restitution } from './ecs/physics/restitution';
 export const [WIDTH, HEIGHT] = [800, 800];
 export const DYNAMIC_SIZE = false;
 
-export const ERROR_MARGIN = 10; // for collision-handling
-
 export enum Scenes {
     Game,
     MainMenu
@@ -62,7 +60,7 @@ export const SCENES: SceneGenerator[] = [() => {
         new Color(platform, 0, 255, 0),
         new Rotation(platform, 0),
         new Rectangle(platform, 0, 0, 300, 100),
-        new RectangleCollider(platform, 0, 0, 300, 100)
+        new RectangleCollider(platform, 0, 0, 300, 100),
     );
 
     const platform2 = scene.entity();
@@ -88,7 +86,6 @@ export const SCENES: SceneGenerator[] = [() => {
         new Restitution(platform3, 0.5),
         new Velocity(platform3, 0, 0),
         new Color(platform3, 0, 0, 255),
-        //new Rotation(platform3, Math.PI / 4),
         new Rectangle(platform3, 0, 0, 375, 100),
         new RectangleCollider(platform3, 0, 0, 375, 100)
     );

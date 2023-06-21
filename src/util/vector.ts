@@ -50,9 +50,29 @@ export namespace Vector {
         return add([
             Math.cos(angle) * difference[0] - Math.sin(angle) * difference[1],
             Math.sin(angle) * difference[0] + Math.cos(angle) * difference[1]
-        ], origin)
+        ], origin);
     };
 
     export const normal = (v: Vector2D): Vector2D =>
         [-v[1], v[0]];
+
+    export const angle = (v1: Vector2D, v2: Vector2D): number =>
+        Math.acos(dot(v1, v2) / (magnitude(v1) * magnitude(v2)));
+
+    export const snap = (orig: Vector2D, ...others: Vector2D[]): Vector2D => {
+        if (others.length == 0) return orig;
+
+        let smallestDifference = Infinity;
+        let bestChoice = 0;
+
+        for (let i = 0; i < others.length; i++) {
+            const difference = angle(orig, others[i]);
+            if (difference <= smallestDifference) {
+                smallestDifference = difference;
+                bestChoice = i;
+            }
+        }
+
+        return others[bestChoice];
+    };
 }

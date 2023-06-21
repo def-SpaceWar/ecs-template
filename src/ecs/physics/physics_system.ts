@@ -4,7 +4,7 @@ import { Position } from "../render/position";
 import type { System } from "../system";
 import { Vector } from "../../util/vector";
 import { Velocity } from "./velocity";
-import { type RectInfo, RectangleCollider, getRectPoints, getRectNormal } from "./rectangle_collider";
+import { type RectInfo, RectangleCollider, getRectPoints } from "./rectangle_collider";
 import { Rotation } from "../render/rotation";
 import { arePolygonsColliding, collisionResolution } from "../../util/collision";
 import { Behavior } from "../primitive/behavior";
@@ -34,9 +34,6 @@ const updateVelocities = (scene: Scene, dt: number) => {
     }
 };
 
-const areRectsColliding = (r1: RectInfo, r2: RectInfo) =>
-    arePolygonsColliding(getRectPoints(r1), getRectPoints(r2));
-
 const updateCollisions = (scene: Scene) => {
     for (let e1 = 0; e1 < scene.totalEntities(); e1++) {
         const position1 = getComponent(e1, Position);
@@ -46,6 +43,7 @@ const updateCollisions = (scene: Scene) => {
         for (let i = 0; i < rectCollider1s.length; i++) {
             const rectCollider1 = rectCollider1s[i];
             if (!(position1 && rectCollider1 && velocity1)) continue;
+            const r1: RectInfo = [position1, rectCollider1, rotation1];
             for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
                 const position2 = getComponent(e2, Position);
                 const velocity2 = getComponent(e2, Velocity);
@@ -54,18 +52,8 @@ const updateCollisions = (scene: Scene) => {
                 for (let j = 0; j < rectCollider2s.length; j++) {
                     const rectCollider2 = rectCollider2s[j];
                     if (!(position2 && rectCollider2 && velocity2)) continue;
-
-                    if (
-                        !areRectsColliding([
-                            position1,
-                            rectCollider1,
-                            rotation1
-                        ], [
-                            position2,
-                            rectCollider2,
-                            rotation2
-                        ])
-                    ) continue;
+                    const r2: RectInfo = [position2, rectCollider2, rotation2];
+                    if (!arePolygonsColliding(getRectPoints(r1), getRectPoints(r2))) continue;
 
                     const behaviors1 = getComponents(e1, Behavior);
                     behaviors1.forEach(b => {
@@ -81,10 +69,32 @@ const updateCollisions = (scene: Scene) => {
                         }
                     });
 
-                    let normal = getRectNormal(
-                        [position1, rectCollider1],
-                        [position2, rectCollider2]
-                    );
+                    let normal = (Vector.subtract(
+                        Vector.add(r2[0].pos, r2[1].pos),
+                        Vector.add(r1[0].pos, r1[1].pos),
+                    ));
+                    normal[0] /= r2[1].dims[0] * r1[1].dims[0];
+                    normal[1] /= r2[1].dims[1] * r1[1].dims[1];
+                    normal = Vector.scale(normal, -1);
+
+                    console.log(normal);
+
+                    const possibleNormals = [
+                        Vector.rotate([0, 1], r2[2] ? r2[2].angle : 0),
+                        Vector.rotate([0, -1], r2[2] ? r2[2].angle : 0),
+                        Vector.rotate([-1, 0], r2[2] ? r2[2].angle : 0),
+                        Vector.rotate([1, 0], r2[2] ? r2[2].angle : 0)
+                    ]
+
+                    possibleNormals[0][1] *= r2[1].dims[0];
+                    possibleNormals[1][1] *= r2[1].dims[0];
+                    possibleNormals[2][0] *= r2[1].dims[1];
+                    possibleNormals[3][0] *= r2[1].dims[1];
+
+                    normal = Vector.normalize(Vector.snap(
+                        normal,
+                        ...possibleNormals
+                    ));
 
                     collisionResolution([
                         position1,

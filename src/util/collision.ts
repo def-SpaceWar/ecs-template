@@ -77,8 +77,8 @@ export type CollisionInfo = [
  * @param {Vector2D} normal - MUST BE NORMALIZED!
  */
 export const collisionResolution = (c1: CollisionInfo, c2: CollisionInfo, normal: Vector2D) => {
-    c1[0].pos = Vector.add(c1[0].pos, Vector.scale(normal, 0.5/(c1[2]?.mass || 1)));
-    c2[0].pos = Vector.add(c2[0].pos, Vector.scale(normal, -0.5/(c2[2]?.mass || 1)));
+    c1[0].pos = Vector.add(c1[0].pos, Vector.scale(normal, 0.5 / (c1[2]?.mass || 1)));
+    c2[0].pos = Vector.add(c2[0].pos, Vector.scale(normal, -0.5 / (c2[2]?.mass || 1)));
 
     const collisionRestitution = Math.min(
         c1[3] ? c1[3].restitution : 1,
@@ -95,6 +95,6 @@ export const collisionResolution = (c1: CollisionInfo, c2: CollisionInfo, normal
         / invertedMasses;
 
     const jN = Vector.scale(normal, impulseMagnitude);
-    c1[1].vel = Vector.add(c1[1].vel, Vector.scale(jN, 1/(c1[2]?.mass || 1)));
-    c2[1].vel = Vector.add(c2[1].vel, Vector.scale(jN, -1/(c2[2]?.mass || 1)));
+    c1[1].vel = Vector.add(c1[1].vel, Vector.scale(jN, 1 / (c1[2]?.mass || 1)));
+    c2[1].vel = Vector.add(c2[1].vel, Vector.scale(jN, -1 / (c2[2]?.mass || 1)));
 };
