@@ -15,7 +15,7 @@ onload = () => {
         createRenderSystem(DYNAMIC_SIZE, WIDTH, HEIGHT)
     ];
     const animate = (before: number) => (now: number) => {
-        const dt = Math.min((now - before) / 1_000, 0.1);
+        const dt = Math.max(Math.min((now - before) / 1_000, 0.1), 0.001);
         renderSystems.forEach(renderSystem => renderSystem(SceneManager.currentScene, dt));
         requestAnimationFrame(animate(now));
     };
@@ -28,7 +28,7 @@ onload = () => {
     let before = performance.now(), now = Infinity;
     setInterval(() => {
         now = performance.now();
-        const dt = Math.min((now - before) / 1_000, 0.1);
+        const dt = Math.max(Math.min((now - before) / 1_000, 0.1), 0.001);
         nonRenderSystems.forEach(s => s(SceneManager.currentScene, dt));
         before = now;
     }, 0);
