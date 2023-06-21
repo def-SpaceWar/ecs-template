@@ -34,23 +34,21 @@ export const getRectPoints = (r: RectInfo): Polygon => {
 };
 
 export const getRectNormal = (r1: [Position, RectangleCollider], r2: [Position, RectangleCollider]): Vector2D => {
-    const normal: Vector2D = [0, 0];
     const pos1 = Vector.add(r1[0].pos, r1[1].pos);
     const dims1 = r1[1].dims;
     const pos2 = Vector.add(r2[0].pos, r2[1].pos);
     const dims2 = r2[1].dims;
-
-    if (pos1[0] + dims1[0] / 2 - ERROR_MARGIN < pos2[0] - dims2[0] / 2) {
-        normal[0] = -1;
-    } else if (pos1[0] - dims1[0] / 2 + ERROR_MARGIN > pos2[0] + dims2[0] / 2) {
-        normal[0] = 1;
-    }
-
+    
     if (pos1[1] + dims1[1] / 2 - ERROR_MARGIN < pos2[1] - dims2[1] / 2) {
-        normal[1] = -1;
+        return [0, -1];
     } else if (pos1[1] - dims1[1] / 2 + ERROR_MARGIN > pos2[1] + dims2[1] / 2) {
-        normal[1] = 1;
+        return [0, 1];
+    } else if (pos1[0] + dims1[0] / 2 - ERROR_MARGIN < pos2[0] - dims2[0] / 2) {
+        return [-1, 0];
+    } else if (pos1[0] - dims1[0] / 2 + ERROR_MARGIN > pos2[0] + dims2[0] / 2) {
+        return [1, 0];
     }
 
-    return Vector.normalize(normal);
+    // bogus!
+    return Vector.random();
 };
