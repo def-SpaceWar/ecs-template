@@ -156,10 +156,9 @@ export function normalOfCollision(
             const vc2 = p2[current2];
             const vn2 = p2[next2];
 
-            if (areLinesColliding(vc1, vn1, vc2, vn2)) {
-                const intersection = linesCollisionPoint(vc1, vn1, vc2, vn2);
-                overlap.push(intersection);
-            }
+            if (!areLinesColliding(vc1, vn1, vc2, vn2)) continue;
+            const intersection = linesCollisionPoint(vc1, vn1, vc2, vn2);
+            overlap.push(intersection);
         }
     }
 
@@ -196,10 +195,9 @@ export function pointOfCollision(
             const vc2 = p2[current2];
             const vn2 = p2[next2];
 
-            if (areLinesColliding(vc1, vn1, vc2, vn2)) {
-                const intersection = linesCollisionPoint(vc1, vn1, vc2, vn2);
-                total = Vector.add(total, intersection);
-            }
+            if (!areLinesColliding(vc1, vn1, vc2, vn2)) continue;
+            const intersection = linesCollisionPoint(vc1, vn1, vc2, vn2);
+            total = Vector.add(total, intersection);
         }
     }
 
