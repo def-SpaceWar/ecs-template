@@ -6,7 +6,7 @@ import { Vector } from "../../util/vector";
 import { Velocity } from "./velocity";
 import { type RectInfo, RectangleCollider, getRectPoints } from "./rectangle_collider";
 import { Rotation } from "../render/rotation";
-import { arePolygonsColliding, collisionResolution } from "../../util/collision";
+import { arePolygonsColliding, normalOfCollision, pointOfCollision, resolveCollision } from "../../util/collision";
 import { Behavior } from "../primitive/behavior";
 import { Acceleration } from "./acceleration";
 import { Drag } from "./drag";
@@ -55,48 +55,31 @@ const updateCollisions = (scene: Scene) => {
                     const r2: RectInfo = [position2, rectCollider2, rotation2];
                     if (!arePolygonsColliding(getRectPoints(r1), getRectPoints(r2))) continue;
 
+                    const collisionPoint = pointOfCollision(
+                        getRectPoints(r2),
+                        getRectPoints(r1),
+                    );
+
                     const behaviors1 = getComponents(e1, Behavior);
                     behaviors1.forEach(b => {
                         if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e2);
+                            b.behavior.onCollision(e2, collisionPoint);
                         }
                     });
 
                     const behaviors2 = getComponents(e2, Behavior);
                     behaviors2.forEach(b => {
                         if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e1);
+                            b.behavior.onCollision(e1, collisionPoint);
                         }
                     });
 
-                    let normal = (Vector.subtract(
-                        Vector.add(r2[0].pos, r2[1].pos),
-                        Vector.add(r1[0].pos, r1[1].pos),
-                    ));
-                    normal[0] /= r2[1].dims[0] * r1[1].dims[0];
-                    normal[1] /= r2[1].dims[1] * r1[1].dims[1];
-                    normal = Vector.scale(normal, -1);
+                    const normal = normalOfCollision(
+                        [r2[0], getRectPoints(r2)],
+                        [r1[0], getRectPoints(r1)],
+                    );
 
-                    console.log(normal);
-
-                    const possibleNormals = [
-                        Vector.rotate([0, 1], r2[2] ? r2[2].angle : 0),
-                        Vector.rotate([0, -1], r2[2] ? r2[2].angle : 0),
-                        Vector.rotate([-1, 0], r2[2] ? r2[2].angle : 0),
-                        Vector.rotate([1, 0], r2[2] ? r2[2].angle : 0)
-                    ]
-
-                    possibleNormals[0][1] *= r2[1].dims[0];
-                    possibleNormals[1][1] *= r2[1].dims[0];
-                    possibleNormals[2][0] *= r2[1].dims[1];
-                    possibleNormals[3][0] *= r2[1].dims[1];
-
-                    normal = Vector.normalize(Vector.snap(
-                        normal,
-                        ...possibleNormals
-                    ));
-
-                    collisionResolution([
+                    resolveCollision([
                         position1,
                         velocity1,
                         getComponent(e1, Mass),

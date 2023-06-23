@@ -1,4 +1,5 @@
 import { SceneManager } from "../../util/scene_manager";
+import type { Vector2D } from "../../util/vector";
 import { type Component, getComponent, isComponent } from "../component";
 import type { Entity } from "../entity";
 import { Name } from "./name";
@@ -21,7 +22,7 @@ export interface BehaviorConstructor {
 export interface BehaviorInterface {
     entity: Entity;
     _update: (dt: number) => void;
-    onCollision?: (other: Entity) => void;
+    onCollision?: (other: Entity, collisionPoint: Vector2D) => void;
 };
 
 export abstract class BehaviorClass implements BehaviorInterface {
@@ -29,10 +30,9 @@ export abstract class BehaviorClass implements BehaviorInterface {
 
     constructor(
         public entity: Entity,
-    ) {}
+    ) { }
 
-    start(): void {};
-
+    start(): void { };
     abstract update(dt: number): void;
 
     _update(dt: number) {
@@ -43,8 +43,8 @@ export abstract class BehaviorClass implements BehaviorInterface {
         this.update(dt);
     }
 
-    // @ts-ignore: parameter `other` not used
-    onCollision(other: Entity) {}
+    // @ts-ignore: parameters not used
+    onCollision(other: Entity, collisionPoint: Vector2D) { }
 }
 
 export function isBehavior<T extends BehaviorInterface>(
@@ -70,14 +70,16 @@ export function getBehavior<T extends BehaviorInterface>(
     return undefined;
 }
 
-export function requireComponent<T extends Component>(
+// Do something about this!
+export function requireComponent(
     entity: Entity,
-    Type: new (...args: any[]) => T,
+    Type: new (...args: any[]) => Component,
     components: Component[] = SceneManager.currentScene.components
-): T | undefined {
+) {
     for (let i = 0; i < components.length; i++) {
         const component = components[i];
         if (component.entity == entity && isComponent(Type, component)) return;
     }
-    throw new Error(`Component not found! ${entity} ${getComponent(entity, Name)?.name} ${Type}`);
+
+    throw new Error(`${Type.name} component not found! [${entity}] ${getComponent(entity, Name)?.name}`);
 }

@@ -13,9 +13,10 @@ import { Drag } from './ecs/physics/drag';
 import { Tag } from './ecs/primitive/tag';
 import { Mass } from './ecs/physics/mass';
 import { Restitution } from './ecs/physics/restitution';
+import { Rotate } from './behaviors/rotate';
 
 export const [WIDTH, HEIGHT] = [800, 800];
-export const DYNAMIC_SIZE = false;
+export const IS_DYNAMIC_SIZE = false;
 
 export enum Scenes {
     Game,
@@ -34,6 +35,49 @@ export const SCENES: SceneGenerator[] = [() => {
         new Rectangle(bg, 0, 0, WIDTH, HEIGHT)
     );
 
+    const platform = scene.entity();
+    scene.components.push(
+        new Name(platform, "Platform"),
+        new Tag(platform, "Platform"),
+        new Position(platform, 200, 700),
+        new Mass(platform, Infinity),
+        new Restitution(platform, 0),
+        new Velocity(platform, 0, 0),
+        new Color(platform, 255, 100, 0),
+        new Rotation(platform, 0),
+        new Rectangle(platform, 0, 0, 300, 100),
+        new RectangleCollider(platform, 0, 0, 300, 100),
+        new Behavior(platform, Rotate)
+    );
+
+    const platform2 = scene.entity();
+    scene.components.push(
+        new Name(platform2, "Platform2"),
+        new Tag(platform2, "Platform"),
+        new Position(platform2, WIDTH - 200, 400),
+        new Mass(platform2, Infinity),
+        new Restitution(platform2, 1),
+        new Velocity(platform2, 0, 0),
+        new Color(platform2, 0, 255, 0),
+        new Rotation(platform2, Math.PI / 4),
+        new Rectangle(platform2, 0, 0, 350, 100),
+        new RectangleCollider(platform2, 0, 0, 350, 100)
+    );
+
+    const platform3 = scene.entity();
+    scene.components.push(
+        new Name(platform3, "Platform3"),
+        new Tag(platform3, "Platform"),
+        new Position(platform3, WIDTH - 200, 700),
+        new Mass(platform3, Infinity),
+        new Restitution(platform3, 0.5),
+        new Velocity(platform3, 0, 0),
+        new Color(platform3, 0, 0, 255),
+        new Rotation(platform3, -Math.PI / 8),
+        new Rectangle(platform3, 0, 0, 375, 100),
+        new RectangleCollider(platform3, 0, 0, 375, 100),
+    );
+
     const player = scene.entity();
     scene.components.push(
         new Name(player, "Player"),
@@ -47,47 +91,6 @@ export const SCENES: SceneGenerator[] = [() => {
         new Rectangle(player, 0, 0, 100, 100),
         new RectangleCollider(player, 0, 0, 100, 100),
         new Behavior(player, MyTestBehavior)
-    );
-
-    const platform = scene.entity();
-    scene.components.push(
-        new Name(platform, "Platform"),
-        new Tag(platform, "Platform"),
-        new Position(platform, 199, 700),
-        new Mass(platform, Infinity),
-        new Restitution(platform, 1),
-        new Velocity(platform, 0, 0),
-        new Color(platform, 0, 255, 0),
-        new Rotation(platform, 0),
-        new Rectangle(platform, 0, 0, 300, 100),
-        new RectangleCollider(platform, 0, 0, 300, 100),
-    );
-
-    const platform2 = scene.entity();
-    scene.components.push(
-        new Name(platform2, "Platform2"),
-        new Tag(platform2, "Platform"),
-        new Position(platform2, WIDTH - 200, 700),
-        new Mass(platform2, Infinity),
-        new Restitution(platform2, 0),
-        new Velocity(platform2, 0, 0),
-        new Color(platform2, 255, 100, 0),
-        new Rotation(platform2, 0),
-        new Rectangle(platform2, 0, 0, 350, 100),
-        new RectangleCollider(platform2, 0, 0, 350, 100)
-    );
-
-    const platform3 = scene.entity();
-    scene.components.push(
-        new Name(platform3, "Platform3"),
-        new Tag(platform3, "Platform"),
-        new Position(platform3, WIDTH - 200, 400),
-        new Mass(platform3, Infinity),
-        new Restitution(platform3, 0.5),
-        new Velocity(platform3, 0, 0),
-        new Color(platform3, 0, 0, 255),
-        new Rectangle(platform3, 0, 0, 375, 100),
-        new RectangleCollider(platform3, 0, 0, 375, 100)
     );
 
     return scene;

@@ -3,9 +3,10 @@ import { Velocity } from "../ecs/physics/velocity";
 import { BehaviorClass } from "../ecs/primitive/behavior";
 import { Position } from "../ecs/render/position";
 import { Input } from "../util/input";
-import { Vector } from "../util/vector";
+import { Vector, type Vector2D } from "../util/vector";
 import type { Entity } from "../ecs/entity";
 import { Tag } from "../ecs/primitive/tag";
+import { DIMENSIONS } from "../ecs/render/render_system";
 
 export class MyTestBehavior extends BehaviorClass {
     position: Position;
@@ -25,6 +26,8 @@ export class MyTestBehavior extends BehaviorClass {
         if (Input.getKey(",") || Input.getKey("w")) this.jump();
         //if (Input.getKey("o") || Input.getKey("s")) this.direction[1] += 1;
         this.isGrounded = false;
+
+        if (this.position.pos[1] > DIMENSIONS[1] + 200) this.position.pos[1] = -200;
     }
 
     moveLeft(dt: number) {
@@ -40,11 +43,10 @@ export class MyTestBehavior extends BehaviorClass {
         this.velocity.vel[1] += -this.jumpPower;
     }
 
-    onCollision(other: Entity): void {
-        const position = getComponent(other, Position)!;
+    onCollision(other: Entity, collisionPoint: Vector2D): void {
         const tags = getComponents(other, Tag);
         for (let i = 0; i < tags.length; i++) {
-            if (tags[i].tag == "Platform" && position.pos[1] > this.position.pos[1]) {
+            if (tags[i].tag == "Platform" && collisionPoint[1] > this.position.pos[1]) {
                 this.isGrounded = true;
             }
         }

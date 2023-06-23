@@ -4,7 +4,7 @@ import { createBehaviorSystem } from './ecs/primitive/behavior_system';
 import { createRenderSystem } from './ecs/render/render_system';
 import { createPhysicsSystem } from './ecs/physics/physics_system';
 import { Input } from './util/input';
-import { SCENES, INITIAL_SCENE, DYNAMIC_SIZE, WIDTH, HEIGHT } from './game';
+import { SCENES, INITIAL_SCENE, IS_DYNAMIC_SIZE, WIDTH, HEIGHT } from './game';
 
 onload = () => {
     SceneManager.sceneList = SCENES;
@@ -12,7 +12,7 @@ onload = () => {
     Input.initKeys();
 
     const renderSystems = [
-        createRenderSystem(DYNAMIC_SIZE, WIDTH, HEIGHT)
+        createRenderSystem(IS_DYNAMIC_SIZE, WIDTH, HEIGHT)
     ];
     const animate = (before: number) => (now: number) => {
         const dt = Math.max(Math.min((now - before) / 1_000, 0.1), 0.001);
