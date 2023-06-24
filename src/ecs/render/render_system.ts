@@ -4,10 +4,62 @@ import { Color } from "./color";
 import { Position } from "../render/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
-import { type Scene } from "../../util/scene_manager";
-import { getComponent, getComponents } from "../component";
+import type { Scene } from "../../util/scene_manager";
+import { getComponent, getComponents, isComponent } from "../component";
+import type { Entity } from "../entity";
+import { Circle } from "./circle";
+import { Ellipse } from "./ellipse";
 
 export const DIMENSIONS: Vector2D = [0, 0];
+
+const draw = (e: Entity, ctx: CanvasRenderingContext2D) => {
+    const shapes = [
+        ...getComponents(e, Rectangle),
+        ...getComponents(e, Circle),
+        ...getComponents(e, Ellipse),
+    ];
+    if (!shapes[0]) return;
+
+    const position = getComponent(e, Position);
+    const pos: Vector2D = position ? position.pos : [0, 0];
+    const isWorldSpace = position?.isWorldSpace || false;
+
+    const color = getComponent(e, Color);
+    const fillStyle = color ? color.toString() : 'black';
+
+    const rotation = getComponent(e, Rotation);
+    const angle = rotation ? rotation.angle : 0;
+
+    ctx.save();
+    ctx.fillStyle = fillStyle;
+    ctx.translate(...pos);
+    if (isWorldSpace) {
+        ctx.translate(DIMENSIONS[0] / 2, DIMENSIONS[1] / 2);
+        const cameraPos: Vector2D = [400, 400];
+        ctx.translate(...Vector.scale(cameraPos, -1));
+    }
+    ctx.rotate(angle);
+    for (let i = 0; i < shapes.length; i++) {
+        const shape = shapes[i];
+        ctx.save();
+        if (isComponent(Rectangle, shape)) {
+            ctx.translate(...Vector.scale(shape.dims, -0.5));
+            ctx.fillRect(...shape.pos, ...shape.dims);
+        }
+        if (isComponent(Circle, shape)) {
+            ctx.beginPath();
+            ctx.arc(...shape.pos, shape.radius, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        if (isComponent(Ellipse, shape)) {
+            ctx.beginPath();
+            ctx.ellipse(...shape.pos, ...shape.dims, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+    ctx.restore();
+}
 
 export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
     const ctx = document.getElementById('app')!.appendChild(
@@ -46,35 +98,7 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (let e = 0; e < scene.totalEntities(); e++) {
-            const rects = getComponents(e, Rectangle);
-            if (!rects[0]) continue;
-
-            const position = getComponent(e, Position);
-            const pos: Vector2D = position ? position.pos : [0, 0];
-            const isWorldSpace = position?.isWorldSpace || false;
-
-            const color = getComponent(e, Color);
-            const fillStyle = color ? color.toString() : 'black';
-
-            const rotation = getComponent(e, Rotation);
-            const angle = rotation ? rotation.angle : 0;
-
-            ctx.save();
-            ctx.fillStyle = fillStyle;
-            ctx.translate(...pos);
-            if (isWorldSpace) {
-                ctx.translate(DIMENSIONS[0] / 2, DIMENSIONS[1] / 2);
-                const cameraPos: Vector2D = [400, 400];
-                ctx.translate(...Vector.scale(cameraPos, -1));
-            }
-            ctx.rotate(angle);
-            for (let i = 0; i < rects.length; i++) {
-                ctx.save();
-                ctx.translate(...Vector.scale(rects[i].dims, -0.5));
-                ctx.fillRect(...rects[i].pos, ...rects[i].dims);
-                ctx.restore();
-            }
-            ctx.restore();
+            draw(e, ctx);
         }
     };
 }

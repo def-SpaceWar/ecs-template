@@ -59,6 +59,14 @@ export namespace Vector {
     export const angle = (v1: Vector2D, v2: Vector2D): number =>
         Math.acos(dot(v1, v2) / (magnitude(v1) * magnitude(v2)));
 
+    export const angleSign = (v1: Vector2D, v2: Vector2D): 1 | -1 => {
+        let angle1 = Math.atan2(v1[1], v1[0]);
+        let angle2 = Math.atan2(v2[1], v2[0]);
+        const difference = angle1 - angle2;
+        if (difference < 0) return -1;
+        return 1;
+    }
+
     export const snap = (orig: Vector2D, ...others: Vector2D[]): Vector2D => {
         if (others.length == 0) return orig;
 

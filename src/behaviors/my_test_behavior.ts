@@ -40,7 +40,7 @@ export class MyTestBehavior extends BehaviorClass {
 
     jump() {
         if (!this.isGrounded) return;
-        this.velocity.vel[1] += -this.jumpPower;
+        this.velocity.vel[1] = -this.jumpPower;
     }
 
     onCollision(other: Entity, collisionPoint: Vector2D): void {

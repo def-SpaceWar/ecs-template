@@ -4,19 +4,20 @@ import { type Component, getComponent, isComponent } from "../component";
 import type { Entity } from "../entity";
 import { Name } from "./name";
 
-export class Behavior implements Component {
+export class Behavior<T extends any[]> implements Component {
     behavior: BehaviorInterface;
 
     constructor(
         public entity: Entity,
-        BehaviorKind: BehaviorConstructor
+        BehaviorKind: BehaviorConstructor<T>,
+        ...args: T
     ) {
-        this.behavior = new BehaviorKind(entity);
+        this.behavior = new BehaviorKind(entity, ...args);
     }
 }
 
-export interface BehaviorConstructor {
-    new(entity: Entity): BehaviorInterface;
+export interface BehaviorConstructor<T extends any[]> {
+    new(entity: Entity, ...args: T): BehaviorInterface;
 };
 
 export interface BehaviorInterface {

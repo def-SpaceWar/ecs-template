@@ -1,9 +1,10 @@
-import { Restitution } from "../ecs/physics/restitution";
-import { Velocity } from "../ecs/physics/velocity";
-import { Position } from "../ecs/render/position";
-import { type Vector2D } from "./vector";
-import { Vector } from "./vector";
-import { Mass } from "../ecs/physics/mass";
+import { type Vector2D, Vector } from "./vector";
+import type { Restitution } from "../ecs/physics/restitution";
+import type { Velocity } from "../ecs/physics/velocity";
+import type { Position } from "../ecs/render/position";
+import type { Mass } from "../ecs/physics/mass";
+import type { RotationalVelocity } from "../ecs/physics/rotational_velocity";
+import type { Rotation } from "../ecs/render/rotation";
 
 export type Polygon = Vector2D[];
 
@@ -67,42 +68,6 @@ export function arePolygonAndPointColliding(polygon: Polygon, [px, py]: Vector2D
     return collision;
 }
 
-export type CollisionInfo = [
-    Position,
-    Velocity,
-    Mass?,
-    Restitution?
-];
-/**
- * @param {Vector2D} normal - MUST BE NORMALIZED!
- */
-export function resolveCollision(
-    c1: CollisionInfo,
-    c2: CollisionInfo,
-    normal: Vector2D
-): void {
-    c1[0].pos = Vector.add(c1[0].pos, Vector.scale(normal, 0.5 / (c1[2]?.mass || 1)));
-    c2[0].pos = Vector.add(c2[0].pos, Vector.scale(normal, -0.5 / (c2[2]?.mass || 1)));
-
-    const collisionRestitution = Math.min(
-        c1[3] ? c1[3].restitution : 1,
-        c2[3] ? c2[3].restitution : 1
-    );
-    const relativeVelocity = Vector.subtract(
-        c1[1].vel,
-        c2[1].vel
-    );
-
-    const invertedMasses = (1 / (c1[2]?.mass || 1)) + (1 / (c2[2]?.mass || 1));
-    const impulseMagnitude = -(1 + collisionRestitution)
-        * Vector.dot(relativeVelocity, normal)
-        / invertedMasses;
-
-    const jN = Vector.scale(normal, impulseMagnitude);
-    c1[1].vel = Vector.add(c1[1].vel, Vector.scale(jN, 1 / (c1[2]?.mass || 1)));
-    c2[1].vel = Vector.add(c2[1].vel, Vector.scale(jN, -1 / (c2[2]?.mass || 1)));
-};
-
 export function linesCollisionPoint(
     [x1, y1]: Vector2D,
     [x2, y2]: Vector2D,
@@ -162,17 +127,21 @@ export function normalOfCollision(
         }
     }
 
-    return Vector.normalize(Vector.snap(
-        Vector.subtract(c2, c1),
-        Vector.normal(Vector.subtract(
-            overlap[0],
-            overlap[overlap.length - 1]
-        )),
-        Vector.normal(Vector.subtract(
-            overlap[overlap.length - 1],
-            overlap[0]
-        ))
-    ));
+    try {
+        return Vector.normalize(Vector.snap(
+            Vector.subtract(c2, c1),
+            Vector.normal(Vector.subtract(
+                overlap[0],
+                overlap[overlap.length - 1]
+            )),
+            Vector.normal(Vector.subtract(
+                overlap[overlap.length - 1],
+                overlap[0]
+            ))
+        ));
+    } catch {
+        return Vector.random();
+    }
 }
 
 export function pointOfCollision(
@@ -202,4 +171,64 @@ export function pointOfCollision(
     }
 
     return Vector.scale(total, 1 / total.length);
+}
+
+export type CollisionInfo = [
+    Position,
+    Velocity?,
+    Mass?,
+    Restitution?,
+    Rotation?,
+    RotationalVelocity?
+];
+
+/**
+ * @param {Vector2D} normal - MUST BE NORMALIZED!
+ */
+export function resolveCollision(
+    c1: CollisionInfo,
+    c2: CollisionInfo,
+    normal: Vector2D,
+    collisionPoint: Vector2D
+): void {
+    c1[0].pos = Vector.add(c1[0].pos, Vector.scale(normal, 0.5 / (c1[2]?.mass || Infinity)));
+    c2[0].pos = Vector.add(c2[0].pos, Vector.scale(normal, -0.5 / (c2[2]?.mass || Infinity)));
+
+    const collisionRestitution = Math.min(
+        c1[3] ? c1[3].restitution : 1,
+        c2[3] ? c2[3].restitution : 1
+    );
+    const relativeVelocity = Vector.subtract(
+        c1[1] ? c1[1].vel : [0, 0],
+        c2[1] ? c2[1].vel : [0, 0]
+    );
+
+    const invertedMasses = (1 / (c1[2]?.mass || 1)) + (1 / (c2[2]?.mass || 1));
+    const impulseMagnitude = -(1 + collisionRestitution)
+        * Vector.dot(relativeVelocity, normal)
+        / invertedMasses;
+
+    const jN = Vector.scale(normal, impulseMagnitude);
+    if (c1[1]) c1[1].vel = Vector.add(c1[1].vel, Vector.scale(jN, 1 / (c1[2] ? c1[2].mass : Infinity)));
+    if (c2[1]) c2[1].vel = Vector.add(c2[1].vel, Vector.scale(jN, -1 / (c2[2]?.mass || Infinity)));
+
+    rotationalImpulse(c1, normal, collisionPoint);
+    rotationalImpulse(c2, Vector.scale(normal, -1), collisionPoint);
+};
+
+function rotationalImpulse(
+    c: CollisionInfo,
+    normal: Vector2D,
+    collisionPoint: Vector2D
+) {
+    const vel = c[1];
+    const rot = c[4];
+    const rotVel = c[5];
+
+    if (vel && rot && rotVel) {
+        const targetDirection = Vector.scale(normal, -1);
+        const difference = Vector.normalize(Vector.subtract(collisionPoint, c[0].pos));
+        const angle = Math.acos(Math.min(Vector.dot(difference, targetDirection), 1)) * Vector.angleSign(difference, targetDirection);
+        rotVel.vel += angle;
+    }
 }
