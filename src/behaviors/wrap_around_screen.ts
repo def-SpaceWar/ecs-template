@@ -12,8 +12,14 @@ export class WrapAroundScreen extends BehaviorClass {
     }
 
     update(_dt: number): void {
-        if (this.position.pos[0] > DIMENSIONS[0] + 200) this.position.pos[0] = -100;
-        if (this.position.pos[0] < -200) this.position.pos[0] = DIMENSIONS[0] + 100;
-        if (this.position.pos[1] > DIMENSIONS[1] + 200) this.position.pos[1] = -200;
+        if (this.position.pos[0] > DIMENSIONS[0] + 200) {
+            this.position.pos[0] = -100;
+        } else if (this.position.pos[0] < -200) {
+            this.position.pos[0] = DIMENSIONS[0] + 100;
+        }
+
+        if (this.position.pos[1] > DIMENSIONS[1] + 200) {
+            this.position.pos[1] = -200;
+        }
     }
 }

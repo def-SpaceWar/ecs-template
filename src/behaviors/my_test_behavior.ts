@@ -6,7 +6,6 @@ import { Input } from "../util/input";
 import { Vector, type Vector2D } from "../util/vector";
 import type { Entity } from "../ecs/entity";
 import { Tag } from "../ecs/primitive/tag";
-import { DIMENSIONS } from "../ecs/render/render_system";
 
 export class MyTestBehavior extends BehaviorClass {
     parameters: {
@@ -31,7 +30,6 @@ export class MyTestBehavior extends BehaviorClass {
         if (Input.getKey("a")) this.moveLeft(dt);
         if (Input.getKey("e") || Input.getKey("d")) this.moveRight(dt);
         if (Input.getKey(",") || Input.getKey("w")) this.jump();
-        //if (Input.getKey("o") || Input.getKey("s")) this.direction[1] += 1;
         this.isGrounded = false;
     }
 

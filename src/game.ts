@@ -16,7 +16,6 @@ import { Restitution } from './ecs/physics/restitution';
 import { CollisionTag } from './ecs/physics/collision_tag';
 import { RotationalVelocity } from './ecs/physics/rotational_velocity';
 import { RotationalResistence } from './ecs/physics/rotational_resistence';
-import { CircleCollider } from './ecs/physics/circle_collider';
 
 export const [WIDTH, HEIGHT] = [800, 800];
 export const IS_DYNAMIC_SIZE = true;
@@ -70,27 +69,26 @@ export const SCENES: SceneGenerator[] = [() => {
         new Rectangle(player, 0, 0, 100, 100),
         new RectangleCollider(player, 0, 0, 100, 100),
         new Behavior(player, MyTestBehavior, { speed: 10_000, jumpPower: 1_000 }),
-        //new Behavior(player, WrapAroundScreen),
     );
 
-    //const box = scene.entity();
-    //scene.components.push(
-    //    new Name(box, "Box"),
-    //    new Tag(box, "Platform"),
-    //    new CollisionTag(box, "Box"),
-    //    new Position(box, 400, 400),
-    //    new Mass(box, 1),
-    //    new Restitution(box, 1),
-    //    new Drag(box, 0.5),
-    //    new Velocity(box, 0, 0),
-    //    new Acceleration(box, 0, 1_000),
-    //    new Color(box, 100, 50, 0),
-    //    new Rotation(box, 0),
-    //    new RotationalVelocity(box, 0),
-    //    new Rectangle(box, 0, 0, 100, 100),
-    //    new RectangleCollider(box, 0, 0, 100, 100),
-    //    new Behavior(box, WrapAroundScreen)
-    //);
+    const box = scene.entity();
+    scene.components.push(
+        new Name(box, "Box"),
+        new Tag(box, "Platform"),
+        new CollisionTag(box, "Box"),
+        new Position(box, 400, 400),
+        new Mass(box, 1),
+        new Restitution(box, 1),
+        new Drag(box, 0.5),
+        new Velocity(box, 0, 0),
+        new Acceleration(box, 0, 1_000),
+        new Color(box, 100, 50, 0),
+        new Rotation(box, 0),
+        new RotationalVelocity(box, 0),
+        new RotationalResistence(box, 0.3),
+        new Rectangle(box, 0, 0, 100, 100),
+        new RectangleCollider(box, 0, 0, 100, 100)
+    );
 
     const ramp3 = scene.entity();
     scene.components.push(

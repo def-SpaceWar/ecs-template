@@ -2,7 +2,7 @@ import { getComponent, getComponents, isComponent } from "../component";
 import type { Scene } from "../../util/scene_manager";
 import { Position } from "../render/position";
 import type { System } from "../system";
-import { Vector, type Vector2D } from "../../util/vector";
+import { Vector } from "../../util/vector";
 import { Velocity } from "./velocity";
 import { RectangleCollider, getRectPoints } from "./rectangle_collider";
 import { Rotation } from "../render/rotation";
@@ -90,7 +90,7 @@ const getPoints = (colliderInfo: ColliderInfo): Polygon => {
     return [];
 };
 
-const updateCollisions = (scene: Scene, dt: number) => {
+const updateCollisions = (scene: Scene) => {
     for (let e1 = 0; e1 < scene.totalEntities(); e1++) {
         const position1 = getComponent(e1, Position);
         const velocity1 = getComponent(e1, Velocity);
@@ -183,6 +183,6 @@ export function createPhysicsSystem(): System {
         tpsCounts.push(1 / dt);
         tpsText.innerText = `TPS: ${average()}; [${min()}, ${max()}]`;
         updateVelocities(scene, dt);
-        updateCollisions(scene, dt);
+        updateCollisions(scene);
     };
 }
