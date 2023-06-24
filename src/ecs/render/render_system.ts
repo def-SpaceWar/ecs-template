@@ -93,8 +93,6 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         min = () => Math.floor(Math.min(...fpsCounts));
 
     let cameraPos: Vector2D = Vector.zero();
-    const lerpConstant = 6;
-
     return (scene: Scene, dt: number) => {
         fpsCounts.push(1 / dt);
         fpsText.innerText = `FPS: ${average()}; [${min()}, ${max()}]`;
@@ -116,8 +114,8 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
 
         center = Vector.scale(center, 1 / centeredEntities);
         cameraPos = Vector.add(
-            Vector.scale(cameraPos, 1 - dt * lerpConstant),
-            Vector.scale(center, dt * lerpConstant)
+            Vector.scale(cameraPos, 0),
+            Vector.scale(center, 1)
         )
 
         for (let e = 0; e < scene.totalEntities(); e++) {

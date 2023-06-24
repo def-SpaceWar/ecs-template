@@ -39,17 +39,17 @@ const updateVelocities = (scene: Scene, dt: number) => {
 
         const rotationalVelocity = getComponent(e, RotationalVelocity);
         if (rotationalVelocity) {
-            const rotation = getComponent(e, Rotation);
-            if (rotation) {
-                rotation.angle += rotationalVelocity.vel * dt;
-                if (rotation.angle > Math.PI * 2) rotation.angle = rotation.angle % (Math.PI * 2);
-                if (rotation.angle < 0) rotation.angle += Math.PI * 2;
-            }
-
             const rotationalResistence = getComponent(e, RotationalResistence);
+            const rotation = getComponent(e, Rotation);
+
+            if (!rotation) break;
             if (rotationalResistence) {
-                rotationalVelocity.vel *= Math.exp(dt * Math.log(rotationalResistence.resistence));
+                rotation.angle += rotationalVelocity.vel * dt * rotationalResistence.resistence;
+            } else {
+                rotation.angle += rotationalVelocity.vel * dt;
             }
+            if (rotation.angle > Math.PI * 2) rotation.angle = rotation.angle % (Math.PI * 2);
+            if (rotation.angle < 0) rotation.angle += Math.PI * 2;
         }
     }
 };

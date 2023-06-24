@@ -16,6 +16,7 @@ import { Restitution } from './ecs/physics/restitution';
 import { CollisionTag } from './ecs/physics/collision_tag';
 import { RotationalVelocity } from './ecs/physics/rotational_velocity';
 import { RotationalResistence } from './ecs/physics/rotational_resistence';
+import { CircleCollider } from './ecs/physics/circle_collider';
 
 export const [WIDTH, HEIGHT] = [800, 800];
 export const IS_DYNAMIC_SIZE = true;
@@ -65,7 +66,7 @@ export const SCENES: SceneGenerator[] = [() => {
         new Color(player, 255, 0, 0),
         new Rotation(player),
         new RotationalVelocity(player, 0),
-        new RotationalResistence(player, 0.1),
+        new RotationalResistence(player, 0.3),
         new Rectangle(player, 0, 0, 100, 100),
         new RectangleCollider(player, 0, 0, 100, 100),
         new Behavior(player, MyTestBehavior, { speed: 10_000, jumpPower: 1_000 }),
@@ -135,7 +136,7 @@ export const SCENES: SceneGenerator[] = [() => {
         new Position(ramp4, 550, 600),
         new Restitution(ramp2, 1),
         new Color(ramp4, 100, 0, 255),
-        new Rotation(ramp4, 7 * Math.PI / 4),
+        new Rotation(ramp4, 8 * Math.PI / 4.5),
         new Rectangle(ramp4, 0, 0, 600, 100),
         new RectangleCollider(ramp4, 0, 0, 600, 100)
     );

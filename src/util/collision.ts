@@ -216,6 +216,7 @@ export function resolveCollision(
     rotationalImpulse(c2, Vector.scale(normal, -1), collisionPoint);
 };
 
+// TODO Rewrite to just just do a force at point with the jN stuff
 function rotationalImpulse(
     c: CollisionInfo,
     normal: Vector2D,
@@ -224,11 +225,16 @@ function rotationalImpulse(
     const vel = c[1];
     const rot = c[4];
     const rotVel = c[5];
+    if (!(vel && rot && rotVel)) return;
 
-    if (vel && rot && rotVel) {
-        const targetDirection = Vector.scale(normal, -1);
-        const difference = Vector.normalize(Vector.subtract(collisionPoint, c[0].pos));
-        const angle = Math.acos(Math.min(Vector.dot(difference, targetDirection), 1)) * Vector.angleSign(difference, targetDirection);
-        rotVel.vel += angle;
-    }
+    const targetDirection = Vector.scale(normal, -1);
+    const difference = Vector.normalize(Vector.subtract(collisionPoint, c[0].pos));
+    const angle = Math.acos(
+        Math.min(
+            Vector.dot(difference, targetDirection),
+            1
+        )
+    ) * Vector.angleSign(difference, targetDirection);
+
+    rotVel.vel += angle;
 }
