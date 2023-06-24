@@ -15,6 +15,7 @@ import { Mass } from './ecs/physics/mass';
 import { Restitution } from './ecs/physics/restitution';
 import { CollisionTag } from './ecs/physics/collision_tag';
 import { RotationalVelocity } from './ecs/physics/rotational_velocity';
+import { RotationalResistence } from './ecs/physics/rotational_resistence';
 
 export const [WIDTH, HEIGHT] = [800, 800];
 export const IS_DYNAMIC_SIZE = true;
@@ -59,11 +60,12 @@ export const SCENES: SceneGenerator[] = [() => {
         new Mass(player, 1),
         new Velocity(player, 0, 0),
         new Restitution(player, 1),
-        new Drag(player, 0.5),
+        new Drag(player, 0.8),
         new Acceleration(player, 0, 1_000),
         new Color(player, 255, 0, 0),
         new Rotation(player),
         new RotationalVelocity(player, 0),
+        new RotationalResistence(player, 0.1),
         new Rectangle(player, 0, 0, 100, 100),
         new RectangleCollider(player, 0, 0, 100, 100),
         new Behavior(player, MyTestBehavior, { speed: 10_000, jumpPower: 1_000 }),

@@ -15,6 +15,7 @@ import { Restitution } from "./restitution";
 import { CircleCollider, getCirclePoints } from "./circle_collider";
 import { EllipseCollider, getEllipsePoints } from "./ellipse_collider";
 import { RotationalVelocity } from "./rotational_velocity";
+import { RotationalResistence } from "./rotational_resistence";
 
 const updateVelocities = (scene: Scene, dt: number) => {
     for (let e = 0; e < scene.totalEntities(); e++) {
@@ -41,11 +42,13 @@ const updateVelocities = (scene: Scene, dt: number) => {
             const rotation = getComponent(e, Rotation);
             if (rotation) {
                 rotation.angle += rotationalVelocity.vel * dt;
+                if (rotation.angle > Math.PI * 2) rotation.angle = rotation.angle % (Math.PI * 2);
+                if (rotation.angle < 0) rotation.angle += Math.PI * 2;
             }
 
-            const drag = getComponent(e, Drag);
-            if (drag) {
-                rotationalVelocity.vel *= Math.exp(dt * Math.log(drag.drag));
+            const rotationalResistence = getComponent(e, RotationalResistence);
+            if (rotationalResistence) {
+                rotationalVelocity.vel *= Math.exp(dt * Math.log(rotationalResistence.resistence));
             }
         }
     }

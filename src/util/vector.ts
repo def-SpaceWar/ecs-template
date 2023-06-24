@@ -75,10 +75,9 @@ export namespace Vector {
 
         for (let i = 0; i < others.length; i++) {
             const difference = angle(orig, others[i]);
-            if (difference <= smallestDifference) {
-                smallestDifference = difference;
-                bestChoice = i;
-            }
+            if (difference > smallestDifference) continue;
+            smallestDifference = difference;
+            bestChoice = i;
         }
 
         return others[bestChoice];
