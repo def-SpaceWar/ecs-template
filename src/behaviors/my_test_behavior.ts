@@ -9,15 +9,22 @@ import { Tag } from "../ecs/primitive/tag";
 import { DIMENSIONS } from "../ecs/render/render_system";
 
 export class MyTestBehavior extends BehaviorClass {
+    parameters: {
+        speed?: number,
+        jumpPower?: number
+    } = {};
+    speed: number;
+    jumpPower: number;
+
     position: Position;
     velocity: Velocity;
-    speed = 1_000;
     isGrounded = true;
-    jumpPower = 1_000;
 
     start(): void {
         this.position = getComponent(this.entity, Position)!;
         this.velocity = getComponent(this.entity, Velocity)!;
+        this.speed = this.parameters.speed || 1_000;
+        this.jumpPower = this.parameters.jumpPower || 1_000;
     }
 
     update(dt: number): void {
@@ -26,15 +33,15 @@ export class MyTestBehavior extends BehaviorClass {
         if (Input.getKey(",") || Input.getKey("w")) this.jump();
         //if (Input.getKey("o") || Input.getKey("s")) this.direction[1] += 1;
         this.isGrounded = false;
-
-        if (this.position.pos[1] > DIMENSIONS[1] + 200) this.position.pos[1] = -200;
     }
 
     moveLeft(dt: number) {
+        if (!this.isGrounded) return;
         this.velocity.vel = Vector.add(this.velocity.vel, [-this.speed * dt, 0]);
     }
 
     moveRight(dt: number) {
+        if (!this.isGrounded) return;
         this.velocity.vel = Vector.add(this.velocity.vel, [this.speed * dt, 0]);
     }
 

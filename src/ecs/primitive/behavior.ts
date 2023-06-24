@@ -1,33 +1,35 @@
 import { SceneManager } from "../../util/scene_manager";
 import type { Vector2D } from "../../util/vector";
-import { type Component, getComponent, isComponent } from "../component";
+import { type Component, isComponent } from "../component";
 import type { Entity } from "../entity";
-import { Name } from "./name";
 
-export class Behavior<T extends any[]> implements Component {
-    behavior: BehaviorInterface;
+export class Behavior<T extends any> implements Component {
+    behavior: BehaviorInterface<T>;
 
     constructor(
         public entity: Entity,
         BehaviorKind: BehaviorConstructor<T>,
-        ...args: T
+        parameters?: T
     ) {
-        this.behavior = new BehaviorKind(entity, ...args);
+        this.behavior = new BehaviorKind(entity);
+        this.behavior.parameters = parameters;
     }
 }
 
-export interface BehaviorConstructor<T extends any[]> {
-    new(entity: Entity, ...args: T): BehaviorInterface;
+export interface BehaviorConstructor<T extends any> {
+    new(entity: Entity): BehaviorInterface<T>;
 };
 
-export interface BehaviorInterface {
+export interface BehaviorInterface<T extends any> {
     entity: Entity;
+    parameters?: T;
     _update: (dt: number) => void;
     onCollision?: (other: Entity, collisionPoint: Vector2D) => void;
 };
 
-export abstract class BehaviorClass implements BehaviorInterface {
+export abstract class BehaviorClass implements BehaviorInterface<unknown> {
     init = true;
+    parameters: unknown;
 
     constructor(
         public entity: Entity,
@@ -48,14 +50,14 @@ export abstract class BehaviorClass implements BehaviorInterface {
     onCollision(other: Entity, collisionPoint: Vector2D) { }
 }
 
-export function isBehavior<T extends BehaviorInterface>(
+export function isBehavior<T extends BehaviorInterface<K>, K extends any>(
     Type: new (entity: Entity) => T,
-    behavior: BehaviorInterface
+    behavior: BehaviorInterface<K>
 ): behavior is T {
     return behavior instanceof Type;
 }
 
-export function getBehavior<T extends BehaviorInterface>(
+export function getBehavior<T extends BehaviorInterface<K>, K extends any>(
     entity: Entity,
     Type: new (entity: Entity) => T,
     components: Component[] = SceneManager.currentScene.components
@@ -68,19 +70,4 @@ export function getBehavior<T extends BehaviorInterface>(
             isBehavior(Type, component.behavior)
         ) return component.behavior;
     }
-    return undefined;
-}
-
-// Do something about this!
-export function requireComponent(
-    entity: Entity,
-    Type: new (...args: any[]) => Component,
-    components: Component[] = SceneManager.currentScene.components
-) {
-    for (let i = 0; i < components.length; i++) {
-        const component = components[i];
-        if (component.entity == entity && isComponent(Type, component)) return;
-    }
-
-    throw new Error(`${Type.name} component not found! [${entity}] ${getComponent(entity, Name)?.name}`);
 }

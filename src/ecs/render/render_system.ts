@@ -9,10 +9,11 @@ import { getComponent, getComponents, isComponent } from "../component";
 import type { Entity } from "../entity";
 import { Circle } from "./circle";
 import { Ellipse } from "./ellipse";
+import { Tag } from "../primitive/tag";
 
 export const DIMENSIONS: Vector2D = [0, 0];
 
-const draw = (e: Entity, ctx: CanvasRenderingContext2D) => {
+const draw = (e: Entity, ctx: CanvasRenderingContext2D, cameraPos: Vector2D) => {
     const shapes = [
         ...getComponents(e, Rectangle),
         ...getComponents(e, Circle),
@@ -35,7 +36,6 @@ const draw = (e: Entity, ctx: CanvasRenderingContext2D) => {
     ctx.translate(...pos);
     if (isWorldSpace) {
         ctx.translate(DIMENSIONS[0] / 2, DIMENSIONS[1] / 2);
-        const cameraPos: Vector2D = [400, 400];
         ctx.translate(...Vector.scale(cameraPos, -1));
     }
     ctx.rotate(angle);
@@ -92,13 +92,36 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         max = () => Math.floor(Math.max(...fpsCounts)),
         min = () => Math.floor(Math.min(...fpsCounts));
 
+    let cameraPos: Vector2D = Vector.zero();
+    const lerpConstant = 6;
+
     return (scene: Scene, dt: number) => {
         fpsCounts.push(1 / dt);
         fpsText.innerText = `FPS: ${average()}; [${min()}, ${max()}]`;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+        let center: Vector2D = Vector.zero();
+        let centeredEntities = 0;
+
         for (let e = 0; e < scene.totalEntities(); e++) {
-            draw(e, ctx);
+            const tags = getComponents(e, Tag);
+            for (let i = 0; i < tags.length; i++) {
+                if (tags[i].tag != "CameraCenter") continue;
+                const pos = getComponent(e, Position);
+                if (!pos) continue;
+                center = Vector.add(center, pos.pos);
+                centeredEntities++;
+            }
+        }
+
+        center = Vector.scale(center, 1 / centeredEntities);
+        cameraPos = Vector.add(
+            Vector.scale(cameraPos, 1 - dt * lerpConstant),
+            Vector.scale(center, dt * lerpConstant)
+        )
+
+        for (let e = 0; e < scene.totalEntities(); e++) {
+            draw(e, ctx, cameraPos);
         }
     };
 }

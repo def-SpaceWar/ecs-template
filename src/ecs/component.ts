@@ -21,7 +21,6 @@ export function getComponent<T extends Component>(
         const component = components[i];
         if (component.entity == entity && isComponent(Type, component)) return component;
     }
-    return undefined;
 }
 
 export function getComponents<T extends Component>(
@@ -45,7 +44,6 @@ export function findComponent<T extends Component>(
         const component = components[i];
         if (isComponent(Type, component)) return component;
     }
-    return undefined;
 }
 
 export function findComponents<T extends Component>(
