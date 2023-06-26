@@ -16,6 +16,7 @@ import { CircleCollider, getCirclePoints } from "./circle_collider";
 import { EllipseCollider, getEllipsePoints } from "./ellipse_collider";
 import { RotationalVelocity } from "./rotational_velocity";
 import { RotationalResistence } from "./rotational_resistence";
+import { CollisionTag } from "./collision_tag";
 
 const updateVelocities = (scene: Scene, dt: number) => {
     for (let e = 0; e < scene.totalEntities(); e++) {
@@ -37,19 +38,16 @@ const updateVelocities = (scene: Scene, dt: number) => {
             }
         }
 
-        const rotationalVelocity = getComponent(e, RotationalVelocity);
-        if (rotationalVelocity) {
-            const rotationalResistence = getComponent(e, RotationalResistence);
-            const rotation = getComponent(e, Rotation);
 
-            if (!rotation) break;
+        const rotation = getComponent(e, Rotation);
+        const rotationalVelocity = getComponent(e, RotationalVelocity);
+        if (rotation && rotationalVelocity) {
+            rotation.angle += rotationalVelocity.vel * dt;
+
+            const rotationalResistence = getComponent(e, RotationalResistence);
             if (rotationalResistence) {
-                rotation.angle += rotationalVelocity.vel * dt * rotationalResistence.resistence;
-            } else {
-                rotation.angle += rotationalVelocity.vel * dt;
+                rotationalVelocity.vel *= Math.exp(dt * Math.log(rotationalResistence.resistence));
             }
-            if (rotation.angle > Math.PI * 2) rotation.angle = rotation.angle % (Math.PI * 2);
-            if (rotation.angle < 0) rotation.angle += Math.PI * 2;
         }
     }
 };
@@ -59,35 +57,41 @@ type Collider = RectangleCollider
     | EllipseCollider;
 type ColliderInfo = [
     Position,
-    Collider,
+    Collider[],
     Rotation?
 ];
 
 const getPoints = (colliderInfo: ColliderInfo): Polygon => {
-    if (isComponent(RectangleCollider, colliderInfo[1])) {
-        return getRectPoints([
-            colliderInfo[0],
-            colliderInfo[1],
-            colliderInfo[2]
-        ]);
+    const points: Polygon = [];
+
+    for (let i = 0; i < colliderInfo[1].length; i++) {
+        const collider = colliderInfo[1][i];
+
+        if (isComponent(RectangleCollider, collider)) {
+            points.push(...getRectPoints([
+                colliderInfo[0],
+                collider,
+                colliderInfo[2]
+            ]));
+        }
+
+        if (isComponent(CircleCollider, collider)) {
+            points.push(...getCirclePoints([
+                colliderInfo[0],
+                collider,
+            ]));
+        }
+
+        if (isComponent(EllipseCollider, collider)) {
+            points.push(...getEllipsePoints([
+                colliderInfo[0],
+                collider,
+                colliderInfo[2]
+            ]));
+        }
     }
 
-    if (isComponent(CircleCollider, colliderInfo[1])) {
-        return getCirclePoints([
-            colliderInfo[0],
-            colliderInfo[1]
-        ]);
-    }
-
-    if (isComponent(EllipseCollider, colliderInfo[1])) {
-        return getEllipsePoints([
-            colliderInfo[0],
-            colliderInfo[1],
-            colliderInfo[2]
-        ]);
-    }
-
-    return [];
+    return points;
 };
 
 const updateCollisions = (scene: Scene) => {
@@ -95,71 +99,69 @@ const updateCollisions = (scene: Scene) => {
         const position1 = getComponent(e1, Position);
         const velocity1 = getComponent(e1, Velocity);
         const rotation1 = getComponent(e1, Rotation);
+        const collisionTag1 = getComponent(e1, CollisionTag);
         const collider1s = [
             ...getComponents(e1, RectangleCollider),
             ...getComponents(e1, CircleCollider),
             ...getComponents(e1, EllipseCollider)
         ];
-        for (let i = 0; i < collider1s.length; i++) {
-            const collider1 = collider1s[i];
-            if (!(position1 && collider1)) continue;
-            const colliderInfo1: ColliderInfo = [position1, collider1, rotation1];
-            for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
-                const position2 = getComponent(e2, Position);
-                const velocity2 = getComponent(e2, Velocity);
-                const rotation2 = getComponent(e2, Rotation);
-                const collider2s = [
-                    ...getComponents(e2, RectangleCollider),
-                    ...getComponents(e2, CircleCollider),
-                    ...getComponents(e2, EllipseCollider)
-                ];
-                for (let j = 0; j < collider2s.length; j++) {
-                    const collider2 = collider2s[j];
-                    if (!(position2 && collider2)) continue;
-                    const colliderInfo2: ColliderInfo = [position2, collider2, rotation2];
-                    if (!arePolygonsColliding(getPoints(colliderInfo1), getPoints(colliderInfo2))) continue;
+        // rewrite to merge all the colliders together!
+        if (!(position1 && collider1s.length > 0)) continue;
+        const colliderInfo1: ColliderInfo = [position1, collider1s, rotation1];
+        for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
+            const position2 = getComponent(e2, Position);
+            const velocity2 = getComponent(e2, Velocity);
+            const rotation2 = getComponent(e2, Rotation);
+            const collisionTag2 = getComponent(e2, CollisionTag);
+            if (collisionTag1?.tag == collisionTag2?.tag) continue;
+            const collider2s = [
+                ...getComponents(e2, RectangleCollider),
+                ...getComponents(e2, CircleCollider),
+                ...getComponents(e2, EllipseCollider)
+            ];
+            if (!(position2 && collider2s.length > 0)) continue;
+            const colliderInfo2: ColliderInfo = [position2, collider2s, rotation2];
+            if (!arePolygonsColliding(getPoints(colliderInfo1), getPoints(colliderInfo2))) continue;
 
-                    const collisionPoint = pointOfCollision(
-                        getPoints(colliderInfo2),
-                        getPoints(colliderInfo1),
-                    );
+            const collisionPoint = pointOfCollision(
+                getPoints(colliderInfo2),
+                getPoints(colliderInfo1),
+            );
 
-                    const behaviors1 = getComponents(e1, Behavior);
-                    behaviors1.forEach(b => {
-                        if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e2, collisionPoint);
-                        }
-                    });
-
-                    const behaviors2 = getComponents(e2, Behavior);
-                    behaviors2.forEach(b => {
-                        if (b.behavior.onCollision) {
-                            b.behavior.onCollision(e1, collisionPoint);
-                        }
-                    });
-
-                    const normal = normalOfCollision(
-                        [colliderInfo2[0], getPoints(colliderInfo2)],
-                        [colliderInfo1[0], getPoints(colliderInfo1)],
-                    );
-
-                    resolveCollision([
-                        position1,
-                        velocity1,
-                        getComponent(e1, Mass),
-                        getComponent(e1, Restitution),
-                        getComponent(e1, Rotation),
-                        getComponent(e1, RotationalVelocity)
-                    ], [
-                        position2,
-                        velocity2,
-                        getComponent(e2, Mass),
-                        getComponent(e2, Restitution),
-                        getComponent(e2, Rotation),
-                        getComponent(e2, RotationalVelocity)
-                    ], normal, collisionPoint);
+            const behaviors1 = getComponents(e1, Behavior);
+            behaviors1.forEach(b => {
+                if (b.behavior.onCollision) {
+                    b.behavior.onCollision(e2, collisionPoint);
                 }
-            }
+            });
+
+            const behaviors2 = getComponents(e2, Behavior);
+            behaviors2.forEach(b => {
+                if (b.behavior.onCollision) {
+                    b.behavior.onCollision(e1, collisionPoint);
+                }
+            });
+
+            const normal = normalOfCollision(
+                [colliderInfo2[0], getPoints(colliderInfo2)],
+                [colliderInfo1[0], getPoints(colliderInfo1)],
+            );
+
+            resolveCollision([
+                position1,
+                () => getPoints(colliderInfo1),
+                velocity1,
+                getComponent(e1, Mass),
+                getComponent(e1, Restitution),
+                getComponent(e1, RotationalVelocity)
+            ], [
+                position2,
+                () => getPoints(colliderInfo2),
+                velocity2,
+                getComponent(e2, Mass),
+                getComponent(e2, Restitution),
+                getComponent(e2, RotationalVelocity)
+            ], normal, collisionPoint);
         }
     }
 };

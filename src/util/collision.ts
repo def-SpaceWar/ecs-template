@@ -4,7 +4,7 @@ import type { Velocity } from "../ecs/physics/velocity";
 import type { Position } from "../ecs/render/position";
 import type { Mass } from "../ecs/physics/mass";
 import type { RotationalVelocity } from "../ecs/physics/rotational_velocity";
-import type { Rotation } from "../ecs/render/rotation";
+import { Matrix } from "./matrix";
 
 export type Polygon = Vector2D[];
 
@@ -175,10 +175,10 @@ export function pointOfCollision(
 
 export type CollisionInfo = [
     Position,
+    () => Polygon,
     Velocity?,
     Mass?,
     Restitution?,
-    Rotation?,
     RotationalVelocity?
 ];
 
@@ -191,50 +191,100 @@ export function resolveCollision(
     normal: Vector2D,
     collisionPoint: Vector2D
 ): void {
-    c1[0].pos = Vector.add(c1[0].pos, Vector.scale(normal, 0.5 / (c1[2]?.mass || Infinity)));
-    c2[0].pos = Vector.add(c2[0].pos, Vector.scale(normal, -0.5 / (c2[2]?.mass || Infinity)));
+    const pos1 = c1[0];
+    const polygonGenerator1 = c1[1];
+    const polygon1 = polygonGenerator1()
+        .map(point => Vector.subtract(point, pos1.pos));
+    const vel1 = c1[2];
+    const mass1 = c1[3];
+    const restitution1 = c1[4];
+    const rotationalVel1 = c1[5];
+    const inertia1 = momentOfInertia(polygon1, mass1 ? mass1.mass : Infinity);
+
+    const pos2 = c2[0];
+    const polygonGenerator2 = c2[1];
+    const polygon2 = polygonGenerator2()
+        .map(point => Vector.subtract(point, pos2.pos));
+    const vel2 = c2[2];
+    const mass2 = c2[3];
+    const restitution2 = c2[4];
+    const rotationalVel2 = c2[5];
+    const inertia2 = momentOfInertia(polygon2, mass2 ? mass2.mass : Infinity);
+
+    if (!(vel1 || vel2)) return;
+    while (arePolygonsColliding(polygonGenerator1(), polygonGenerator2())) {
+        if (vel1) pos1.pos = Vector.add(pos1.pos, Vector.scale(normal, 1 / (mass1 ? mass1.mass : Infinity)));
+        if (vel2) pos2.pos = Vector.add(pos2.pos, Vector.scale(normal, -1 / (mass2 ? mass2.mass : Infinity)));
+    }
 
     const collisionRestitution = Math.min(
-        c1[3] ? c1[3].restitution : 1,
-        c2[3] ? c2[3].restitution : 1
-    );
-    const relativeVelocity = Vector.subtract(
-        c1[1] ? c1[1].vel : [0, 0],
-        c2[1] ? c2[1].vel : [0, 0]
+        restitution1 ? restitution1.restitution : 0,
+        restitution2 ? restitution2.restitution : 0
     );
 
-    const invertedMasses = (1 / (c1[2]?.mass || 1)) + (1 / (c2[2]?.mass || 1));
-    const impulseMagnitude = -(1 + collisionRestitution)
-        * Vector.dot(relativeVelocity, normal)
-        / invertedMasses;
+    const collisionArm1 = Vector.subtract(collisionPoint, c1[0].pos);
+    const rotationalVel1Vec: Vector2D = rotationalVel1 ?
+        Vector.scale(Vector.normal(collisionArm1), rotationalVel1.vel)
+        : [0, 0];
+    const closingVel1 = (vel1) ? Vector.add(vel1.vel, rotationalVel1Vec) : rotationalVel1Vec;
+
+    const collisionArm2 = Vector.subtract(collisionPoint, c2[0].pos);
+    const rotationalVel2Vec: Vector2D = rotationalVel2 ?
+        Vector.scale(Vector.normal(collisionArm2), rotationalVel2.vel)
+        : [0, 0];
+    const closingVel2 = (vel2) ? Vector.add(vel2.vel, rotationalVel2Vec) : rotationalVel2Vec;
+
+    const relativeVelocity = Vector.subtract(
+        closingVel1,
+        closingVel2
+    );
+
+    const invertedMasses = (1 / (mass1 ? mass1.mass : Infinity)) +
+        (1 / (mass2 ? mass2.mass : Infinity));
+    const angularInertia =
+        (
+            Matrix.det([collisionArm1, normal]) *
+            Matrix.det([collisionArm1, normal]) /
+            inertia1
+        ) + (
+            Matrix.det([collisionArm2, normal]) *
+            Matrix.det([collisionArm2, normal]) /
+            inertia2
+        );
+    const sepVel = Vector.dot(relativeVelocity, normal);
+    const newSepVel = -sepVel * collisionRestitution;
+    const velocitySeperateDifference = newSepVel - sepVel;
+    const impulseMagnitude = velocitySeperateDifference / (invertedMasses + angularInertia);
 
     const jN = Vector.scale(normal, impulseMagnitude);
-    if (c1[1]) c1[1].vel = Vector.add(c1[1].vel, Vector.scale(jN, 1 / (c1[2] ? c1[2].mass : Infinity)));
-    if (c2[1]) c2[1].vel = Vector.add(c2[1].vel, Vector.scale(jN, -1 / (c2[2]?.mass || Infinity)));
+    if (vel1) vel1.vel = Vector.add(vel1.vel, Vector.scale(jN, 1 / (mass1 ? mass1.mass : Infinity)));
+    if (rotationalVel1) {
+        rotationalVel1.vel += Matrix.det([collisionArm1, jN]) / inertia1;
+    }
 
-    rotationalImpulse(c1, normal, collisionPoint);
-    rotationalImpulse(c2, Vector.scale(normal, -1), collisionPoint);
+    if (vel2) vel2.vel = Vector.add(vel2.vel, Vector.scale(jN, -1 / (mass2 ? mass2.mass : Infinity)));
+    if (rotationalVel2) {
+        rotationalVel2.vel -= Matrix.det([collisionArm2, jN]) / inertia2;
+    }
 };
 
-// TODO Rewrite to just just do a force at point with the jN stuff
-function rotationalImpulse(
-    c: CollisionInfo,
-    normal: Vector2D,
-    collisionPoint: Vector2D
-) {
-    const vel = c[1];
-    const rot = c[4];
-    const rotVel = c[5];
-    if (!(vel && rot && rotVel)) return;
+/**
+ * @param {Polygon} polygon - Must be CENTERED at (0, 0)!
+ * */
+function momentOfInertia(polygon: Polygon, mass: number): number {
+    const N = polygon.length;
 
-    const targetDirection = Vector.scale(normal, -1);
-    const difference = Vector.normalize(Vector.subtract(collisionPoint, c[0].pos));
-    const angle = Math.acos(
-        Math.min(
-            Vector.dot(difference, targetDirection),
-            1
-        )
-    ) * Vector.angleSign(difference, targetDirection);
+    let numerator = 0;
+    let denominator = 0;
+    for (let n = 1; n <= N; n++) {
+        numerator += Matrix.det([polygon[(n + 1) % N], polygon[n % N]]) * (
+            Vector.dot(polygon[n % N], polygon[n % N]) +
+            Vector.dot(polygon[n % N], polygon[(n + 1) % N]) +
+            Vector.dot(polygon[(n + 1) % N], polygon[(n + 1) % N])
+        );
 
-    rotVel.vel += angle;
+        denominator += 6 * Matrix.det([polygon[(n + 1) % N], polygon[n % N]]);
+    }
+
+    return mass * numerator / denominator;
 }

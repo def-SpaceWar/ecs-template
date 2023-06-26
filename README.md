@@ -1,10 +1,9 @@
 # TODO
 
-- Collision tags so same collision tags won't collide with eachother, AND only 1 per entity.
-    - Entity with none is assumed unique.
+- Add "Friction" component, so rolling can be implemented!
 - "requireComponent" for behaviors and components
 - Trigger colliders (they dont cause any displacement, and only activate on COLLIDERS, not other triggers)
-- Images, and circle collider.
+- Images sprites + spritesheet + animator.
 - UI Elements that interact with mouse (Input.mouseX, Input.mouseY, Input.isMouseDown, Input.isMouseUp) support + Buttons
 
 # FUTURE

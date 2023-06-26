@@ -9,7 +9,9 @@ import { Tag } from "../ecs/primitive/tag";
 
 export class MyTestBehavior extends BehaviorClass {
     parameters: {
+        /** Speed in px/s/s */
         speed?: number,
+        /** Instantaneous Velocity upwards */
         jumpPower?: number
     } = {};
     speed: number;
@@ -34,12 +36,10 @@ export class MyTestBehavior extends BehaviorClass {
     }
 
     moveLeft(dt: number) {
-        if (!this.isGrounded) return;
         this.velocity.vel = Vector.add(this.velocity.vel, [-this.speed * dt, 0]);
     }
 
     moveRight(dt: number) {
-        if (!this.isGrounded) return;
         this.velocity.vel = Vector.add(this.velocity.vel, [this.speed * dt, 0]);
     }
 

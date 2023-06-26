@@ -113,10 +113,14 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         }
 
         center = Vector.scale(center, 1 / centeredEntities);
+        const cameraSpeed = Vector.scale(
+            Vector.subtract(center, cameraPos),
+            dt * 2
+        );
         cameraPos = Vector.add(
-            Vector.scale(cameraPos, 0),
-            Vector.scale(center, 1)
-        )
+            cameraPos,
+            cameraSpeed
+        );
 
         for (let e = 0; e < scene.totalEntities(); e++) {
             draw(e, ctx, cameraPos);
