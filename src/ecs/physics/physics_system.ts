@@ -101,7 +101,6 @@ const updateCollisions = (scene: Scene) => {
         const rotation1 = getComponent(e1, Rotation);
         const collisionTag1 = getComponent(e1, CollisionTag);
         const collider1s = getComponentsOfTypes<Collider>(e1, [RectangleCollider, CircleCollider, EllipseCollider]);
-        // rewrite to merge all the colliders together!
         if (!(position1 && collider1s.length > 0)) continue;
         const colliderInfo1: ColliderInfo = [position1, collider1s, rotation1];
         for (let e2 = e1 + 1; e2 < scene.totalEntities(); e2++) {
