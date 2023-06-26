@@ -36,6 +36,21 @@ export function getComponents<T extends Component>(
     return comps;
 }
 
+export function getComponentsOfTypes<T extends Component>(
+    entity: Entity,
+    types: (new (...args: any[]) => T)[],
+    components: Component[] = SceneManager.currentScene.components
+): T[] {
+    const comps: T[] = [];
+    for (let i = 0; i < components.length; i++) {
+        const component = components[i];
+        for (let j = 0; j < types.length; j++) {
+            if (component.entity == entity && isComponent(types[j], component)) comps.push(component as T);
+        }
+    }
+    return comps;
+}
+
 export function findComponent<T extends Component>(
     Type: new (...args: any[]) => T, 
     components: Component[] = SceneManager.currentScene.components

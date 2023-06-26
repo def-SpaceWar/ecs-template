@@ -6,6 +6,8 @@
 - Images sprites + spritesheet + animator.
 - UI Elements that interact with mouse (Input.mouseX, Input.mouseY, Input.isMouseDown, Input.isMouseUp) support + Buttons
 
+- \[Performance\] Change all the `map` and `forEach` and the other functional things to common for loops for better performance!
+
 # FUTURE
 
 - WASM (probably Rust) for the pure math (collisions, intensive vector math)

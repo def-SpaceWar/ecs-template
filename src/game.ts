@@ -2,7 +2,6 @@ import { type SceneGenerator, createScene } from './util/scene_manager';
 import { Behavior } from './ecs/primitive/behavior';
 import { Position } from './ecs/render/position';
 import { Velocity } from './ecs/physics/velocity';
-import { Color } from './ecs/render/color';
 import { Rectangle } from './ecs/render/rectangle';
 import { Rotation } from './ecs/render/rotation';
 import { MyTestBehavior } from './behaviors/my_test_behavior';
@@ -33,8 +32,7 @@ export const SCENES: SceneGenerator[] = [() => {
     scene.components.push(
         new Name(bg, "Background"),
         new Position(bg, 400, 400),
-        new Color(bg, 0, 150, 200),
-        new Rectangle(bg, 0, 0, 1_000_000, 1_000_000)
+        new Rectangle(bg, 0, 0, 1_000_000, 1_000_000, [0, 150, 200])
     );
 
     const platform = scene.entity();
@@ -43,10 +41,8 @@ export const SCENES: SceneGenerator[] = [() => {
         new Tag(platform, "Platform"),
         new CollisionTag(platform, "Platform"),
         new Position(platform, 400, 700),
-        new Restitution(platform, 0.5),
-        new Color(platform, 100, 255, 0),
         new Rotation(platform, 0),
-        new Rectangle(platform, 0, 0, 1_000_000, 200),
+        new Rectangle(platform, 0, 0, 1_000_000, 200, [100, 255, 0]),
         new RectangleCollider(platform, 0, 0, 1_000_000, 200)
     );
 
@@ -61,33 +57,33 @@ export const SCENES: SceneGenerator[] = [() => {
         new Restitution(player, 1),
         new Drag(player, 0.8),
         new Acceleration(player, 0, 1_000),
-        new Color(player, 255, 0, 0),
-        new Rotation(player),
+        new Rotation(player, 0),
         new RotationalVelocity(player, 12),
         new RotationalResistence(player, 0.8),
-        new Rectangle(player, 0, 0, 100, 100),
+        new Rectangle(player, 0, 0, 100, 100, [255, 0, 0]),
         new RectangleCollider(player, 0, 0, 100, 100),
+        new Rectangle(player, 50, 0, 100, 10, [0, 0, 255]),
+        new RectangleCollider(player, 50, 0, 100, 10),
         new Behavior(player, MyTestBehavior, { speed: 1_000, jumpPower: 1_000 }),
     );
 
-    //const box = scene.entity();
-    //scene.components.push(
-    //    new Name(box, "Box"),
-    //    new Tag(box, "Platform"),
-    //    new CollisionTag(box, "Box"),
-    //    new Position(box, 400, 400),
-    //    new Mass(box, 1),
-    //    new Restitution(box, 1),
-    //    new Drag(box, 0.5),
-    //    new Velocity(box, 0, 0),
-    //    new Acceleration(box, 0, 1_000),
-    //    new Color(box, 100, 50, 0),
-    //    new Rotation(box, 0),
-    //    new RotationalVelocity(box, 0),
-    //    new RotationalResistence(box, 0.3),
-    //    new Rectangle(box, 0, 0, 100, 100),
-    //    new RectangleCollider(box, 0, 0, 100, 100)
-    //);
+    const box = scene.entity();
+    scene.components.push(
+        new Name(box, "Box"),
+        new Tag(box, "Platform"),
+        new CollisionTag(box, "Box"),
+        new Position(box, 400, 400),
+        new Mass(box, 1),
+        new Restitution(box, 1),
+        new Drag(box, 0.5),
+        new Velocity(box, 0, 0),
+        new Acceleration(box, 0, 1_000),
+        new Rotation(box, 0),
+        new RotationalVelocity(box, 0),
+        new RotationalResistence(box, 0.3),
+        new Rectangle(box, 0, 0, 100, 100, [100, 50, 0]),
+        new RectangleCollider(box, 0, 0, 100, 100)
+    );
 
     const ramp3 = scene.entity();
     scene.components.push(
@@ -95,9 +91,8 @@ export const SCENES: SceneGenerator[] = [() => {
         new Tag(ramp3, "Platform"),
         new CollisionTag(ramp3, "Platform"),
         new Position(ramp3, 450, 610),
-        new Color(ramp3, 0, 200, 255),
         new Rotation(ramp3, 31 * Math.PI / 16),
-        new Rectangle(ramp3, 0, 0, 600, 100),
+        new Rectangle(ramp3, 0, 0, 600, 100, [0, 200, 255]),
         new RectangleCollider(ramp3, 0, 0, 600, 100)
     );
 
@@ -108,9 +103,8 @@ export const SCENES: SceneGenerator[] = [() => {
         new Tag(ramp, "Platform"),
         new CollisionTag(ramp, "Platform"),
         new Position(ramp, 450, 610),
-        new Color(ramp, 0, 100, 255),
         new Rotation(ramp, 15 * Math.PI / 8),
-        new Rectangle(ramp, 0, 0, 600, 100),
+        new Rectangle(ramp, 0, 0, 600, 100, [0, 100, 255]),
         new RectangleCollider(ramp, 0, 0, 600, 100)
     );
 
@@ -120,9 +114,8 @@ export const SCENES: SceneGenerator[] = [() => {
         new Tag(ramp2, "Platform"),
         new CollisionTag(ramp2, "Platform"),
         new Position(ramp2, 500, 600),
-        new Color(ramp2, 0, 0, 255),
         new Rotation(ramp2, 11 * Math.PI / 6),
-        new Rectangle(ramp2, 0, 0, 600, 100),
+        new Rectangle(ramp2, 0, 0, 600, 100, [0, 0, 255]),
         new RectangleCollider(ramp2, 0, 0, 600, 100)
     );
 
@@ -132,9 +125,8 @@ export const SCENES: SceneGenerator[] = [() => {
         new Tag(ramp4, "Platform"),
         new CollisionTag(ramp4, "Platform"),
         new Position(ramp4, 550, 600),
-        new Color(ramp4, 100, 0, 255),
         new Rotation(ramp4, 8 * Math.PI / 4.5),
-        new Rectangle(ramp4, 0, 0, 800, 100),
+        new Rectangle(ramp4, 0, 0, 800, 100, [100, 0, 255]),
         new RectangleCollider(ramp4, 0, 0, 800, 100)
     );
 
@@ -145,9 +137,8 @@ export const SCENES: SceneGenerator[] = [() => {
     const wall = scene.entity();
     scene.components.push(new Name(wall, "Wall"),
         new Position(wall, 400, 700),
-        new Color(wall, 200, 0, 0),
         new Rotation(wall, 0),
-        new Rectangle(wall, 0, 0, 800, 200),
+        new Rectangle(wall, 0, 0, 800, 200, [200, 0, 0]),
         new RectangleCollider(wall, 0, 0, 1_000, 200)
     );
 
