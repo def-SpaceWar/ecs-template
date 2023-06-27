@@ -1,13 +1,25 @@
 import type { Component, ComponentConstructor } from "../ecs/component";
+import type { Entity } from "../ecs/entity";
 
 export class Scene {
-    entityId = 0;
+    entityId: Entity = 0;
+    emptyEntities: Entity[] = [];
     components: Component[] = [];
 
-    constructor(public sceneId: number) {}
+    constructor(public sceneId: number) { }
 
     entity() {
+        if (this.emptyEntities.length > 0) return this.emptyEntities.shift()!;
         return this.entityId++;
+    }
+
+    destroyEntity(entity: Entity) {
+        this.emptyEntities.push(entity);
+        for (let i = 0; i < this.components.length; i++) {
+            if (this.components[i].entity != entity) continue;
+            this.components.splice(i, 1);
+            i--;
+        }
     }
 
     totalEntities() {

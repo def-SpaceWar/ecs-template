@@ -15,9 +15,13 @@ import { Restitution } from './ecs/physics/restitution';
 import { CollisionTag } from './ecs/physics/collision_tag';
 import { RotationalVelocity } from './ecs/physics/rotational_velocity';
 import { RotationalResistence } from './ecs/physics/rotational_resistence';
+import { FillScreen } from './behaviors/fill_screen';
 
-export const [WIDTH, HEIGHT] = [800, 800];
+export const CAMERA_SPEED = 2;
 export const IS_DYNAMIC_SIZE = true;
+export const [WIDTH, HEIGHT] = [800, 800];
+export const FPS_SAMPLE_SIZE = 25;
+export const TPS_SAMPLE_SIZE = 100;
 
 export enum Scenes {
     Game,
@@ -30,8 +34,9 @@ export const SCENES: SceneGenerator[] = [() => {
 
     scene.createEntity()
         .add(Name, "Background")
-        .add(Position, 400, 400)
-        .add(Rectangle, 0, 0, 1_000_000, 1_000_000, [0, 150, 200])
+        .add(Position, 0, 0, false)
+        .add(Rectangle, 0, 0, 0, 0, [0, 150, 200])
+        .add(Behavior, FillScreen)
     ;
 
     scene.createEntity()

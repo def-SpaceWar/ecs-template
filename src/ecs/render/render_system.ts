@@ -12,7 +12,7 @@ import { Color } from "../../util/color";
 
 export const DIMENSIONS: Vector2D = [0, 0];
 
-export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
+export function createRenderSystem(cameraSpeed: number, dynamic: boolean, w: number, h: number): System {
     const ctx = document.getElementById('app')!.appendChild(
         document.createElement('canvas')
     ).getContext('2d')!;
@@ -29,24 +29,8 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         });
     }
 
-    const fpsText = document.getElementById('app')!.appendChild(
-        document.createElement('p')
-    );
-    fpsText.id = "fps";
-
-    const fpsCounts: number[] = [];
-    const average = () => {
-        if (fpsCounts.length > 25) fpsCounts.shift();
-        const total = fpsCounts.reduce((p, v) => v + p, 0);
-        return Math.floor(total / fpsCounts.length);
-    },
-        max = () => Math.floor(Math.max(...fpsCounts)),
-        min = () => Math.floor(Math.min(...fpsCounts));
-
     let cameraPos: Vector2D = Vector.zero();
     return (scene: Scene, dt: number) => {
-        fpsCounts.push(1 / dt);
-        fpsText.innerText = `FPS: ${average()}; [${min()}, ${max()}]`;
         let center: Vector2D = Vector.zero();
         let centeredEntities = 0;
 
@@ -62,13 +46,13 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
         }
 
         center = Vector.scale(center, 1 / centeredEntities);
-        const cameraSpeed = Vector.scale(
+        const camSpeed = Vector.scale(
             Vector.subtract(center, cameraPos),
-            dt * 2
+            dt * cameraSpeed
         );
         cameraPos = Vector.add(
             cameraPos,
-            cameraSpeed
+            camSpeed
         );
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
