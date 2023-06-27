@@ -3,40 +3,39 @@ import type { Vector2D } from "../../util/vector";
 import { type Component, isComponent } from "../component";
 import type { Entity } from "../entity";
 
-export class Behavior<T extends any> implements Component {
-    behavior: BehaviorInterface<T>;
+export class Behavior<T extends BehaviorInterface> implements Component {
+    behavior: T;
 
     constructor(
         public entity: Entity,
         BehaviorKind: BehaviorConstructor<T>,
-        parameters?: T
+        onCreate?: (b: T) => void
     ) {
         this.behavior = new BehaviorKind(entity);
-        this.behavior.parameters = parameters;
+        if (onCreate) onCreate(this.behavior);
     }
 }
 
-export interface BehaviorConstructor<T extends any> {
-    new(entity: Entity): BehaviorInterface<T>;
+export interface BehaviorConstructor<T extends BehaviorInterface> {
+    new(entity: Entity): T;
 };
 
-export interface BehaviorInterface<T extends any> {
+export interface BehaviorInterface {
     entity: Entity;
-    parameters?: T;
     _update: (dt: number) => void;
-    onCollision?: (other: Entity, collisionPoint: Vector2D) => void;
+    _onCollision: (other: Entity, collisionPoint: Vector2D) => void;
 };
 
-export abstract class BehaviorClass implements BehaviorInterface<unknown> {
-    init = true;
-    parameters: unknown;
+export abstract class BehaviorClass implements BehaviorInterface {
+    private init = true;
 
     constructor(
         public entity: Entity,
     ) { }
 
-    start(): void { };
-    abstract update(dt: number): void;
+    protected start(): void {};
+    // @ts-ignore: parameters not used
+    protected update(dt: number): void {};
 
     _update(dt: number) {
         if (this.init) {
@@ -47,17 +46,20 @@ export abstract class BehaviorClass implements BehaviorInterface<unknown> {
     }
 
     // @ts-ignore: parameters not used
-    onCollision(other: Entity, collisionPoint: Vector2D) { }
+    protected onCollision(other: Entity, collisionPoint: Vector2D): void { }
+    _onCollision(other: Entity, collisionPoint: Vector2D) {
+        this.onCollision(other, collisionPoint);
+    }
 }
 
-export function isBehavior<T extends BehaviorInterface<K>, K extends any>(
+export function isBehavior<T extends BehaviorInterface>(
     Type: new (entity: Entity) => T,
-    behavior: BehaviorInterface<K>
+    behavior: BehaviorInterface
 ): behavior is T {
     return behavior instanceof Type;
 }
 
-export function getBehavior<T extends BehaviorInterface<K>, K extends any>(
+export function getBehavior<T extends BehaviorInterface>(
     entity: Entity,
     Type: new (entity: Entity) => T,
     components: Component[] = SceneManager.currentScene.components
@@ -71,3 +73,4 @@ export function getBehavior<T extends BehaviorInterface<K>, K extends any>(
         ) return component.behavior;
     }
 }
+

@@ -11,6 +11,7 @@ To make a template that is easily usable and with components that are minimal.
 ## TODO
 
 - "requireComponent" for behaviors and components
+- turn the Camera into an entity/component/system
 - implement zIndex for drawing
 - Trigger colliders (they dont cause any collision, and only activate on COLLIDERS, not other triggers)
 - Images sprites + spritesheet + animator.

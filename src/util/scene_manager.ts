@@ -1,5 +1,6 @@
 import type { Component, ComponentConstructor } from "../ecs/component";
 import type { Entity } from "../ecs/entity";
+import { Behavior, type BehaviorInterface } from "../ecs/primitive/behavior";
 
 export class Scene {
     entityId: Entity = 0;
@@ -30,10 +31,20 @@ export class Scene {
         const scene = this;
         return {
             entity: this.entity(),
-            add<T extends any[]>(Type: ComponentConstructor<T>, ...args: T) {
+            add<T extends any[]>(
+                Type: ComponentConstructor<T>,
+                ...args: T
+            ) {
                 scene.components.push(new Type(this.entity, ...args));
                 return this;
-            }
+            },
+            behavior<T extends BehaviorInterface>(
+                Type: new (entity: Entity) => T,
+                onCreate?: (b: T) => void
+            ) {
+                scene.components.push(new Behavior(this.entity, Type, onCreate));
+                return this;
+            },
         }
     }
 }

@@ -10,6 +10,4 @@ export class FillScreen extends BehaviorClass {
         this.rect = getComponent(this.entity, Rectangle)!;
         this.rect.dims = DIMENSIONS;
     }
-
-    update(): void {}
 }

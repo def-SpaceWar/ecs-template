@@ -121,16 +121,12 @@ const updateCollisions = (scene: Scene) => {
 
             const behaviors1 = getComponents(e1, Behavior);
             behaviors1.forEach(b => {
-                if (b.behavior.onCollision) {
-                    b.behavior.onCollision(e2, collisionPoint);
-                }
+                b.behavior._onCollision(e2, collisionPoint);
             });
 
             const behaviors2 = getComponents(e2, Behavior);
             behaviors2.forEach(b => {
-                if (b.behavior.onCollision) {
-                    b.behavior.onCollision(e1, collisionPoint);
-                }
+                b.behavior._onCollision(e1, collisionPoint);
             });
 
             const normal = Collision.normalOfCollision(
