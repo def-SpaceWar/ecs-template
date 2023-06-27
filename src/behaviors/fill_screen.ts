@@ -4,9 +4,9 @@ import { Rectangle } from "../ecs/render/rectangle";
 import { DIMENSIONS } from "../ecs/render/render_system";
 
 export class FillScreen extends BehaviorClass {
-    rect: Rectangle;
+    private rect: Rectangle;
 
-    start() {
+    protected start() {
         this.rect = getComponent(this.entity, Rectangle)!;
         this.rect.dims = DIMENSIONS;
     }
