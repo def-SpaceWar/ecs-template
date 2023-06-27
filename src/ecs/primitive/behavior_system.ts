@@ -5,10 +5,10 @@ import { Behavior } from "./behavior";
 
 export function createBehaviorSystem(): System {
     return (scene: Scene, dt: number) => {
-        scene.components.forEach(c => {
-            if (isComponent(Behavior, c)) {
-                c.behavior._update(dt);
-            }
-        });
+        for (let i = 0; i < scene.components.length; i++) {
+            const comp = scene.components[i];
+            if (!isComponent(Behavior, comp)) continue;
+            comp.behavior._update(dt);
+        }
     };
 }

@@ -1,6 +1,10 @@
 import { SceneManager } from "../util/scene_manager";
 import type { Entity } from "./entity";
 
+export interface ComponentConstructor<T extends any[]> {
+    new(entity: Entity, ...args: T): Component;
+};
+
 export interface Component {
     entity: Entity;
 };
@@ -69,6 +73,20 @@ export function findComponents<T extends Component>(
     for (let i = 0; i < components.length; i++) {
         const component = components[i];
         if (isComponent(Type, component)) comps.push(component);
+    }
+    return comps;
+}
+
+export function findComponentsOfTypes<T extends Component>(
+    types: (new (...args: any[]) => T)[],
+    components: Component[] = SceneManager.currentScene.components
+): T[] {
+    const comps: T[] = [];
+    for (let i = 0; i < components.length; i++) {
+        const component = components[i];
+        for (let j = 0; j < types.length; j++) {
+            if (isComponent(types[j], component)) comps.push(component as T);
+        }
     }
     return comps;
 }

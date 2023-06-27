@@ -4,55 +4,13 @@ import { Position } from "../render/position";
 import { Rotation } from "./rotation";
 import { Rectangle } from "./rectangle";
 import type { Scene } from "../../util/scene_manager";
-import { type Component, getComponent, getComponents, getComponentsOfTypes, isComponent } from "../component";
-import type { Entity } from "../entity";
+import { type Component, getComponent, getComponents, findComponentsOfTypes, isComponent } from "../component";
 import { Circle } from "./circle";
 import { Ellipse } from "./ellipse";
 import { Tag } from "../primitive/tag";
 import { Color } from "../../util/color";
 
 export const DIMENSIONS: Vector2D = [0, 0];
-
-const draw = (e: Entity, ctx: CanvasRenderingContext2D, cameraPos: Vector2D) => {
-    const shapes = getComponentsOfTypes<Component>(e, [Rectangle, Circle, Ellipse]);
-    if (!shapes[0]) return;
-
-    const position = getComponent(e, Position);
-    const pos: Vector2D = position ? position.pos : [0, 0];
-    const isWorldSpace = position?.isWorldSpace || false;
-
-    const rotation = getComponent(e, Rotation);
-    const angle = rotation ? rotation.angle : 0;
-
-    ctx.save();
-    ctx.translate(...pos);
-    ctx.translate(DIMENSIONS[0] / 2, DIMENSIONS[1] / 2);
-    if (isWorldSpace) {
-        ctx.translate(...Vector.scale(cameraPos, -1));
-    }
-    ctx.rotate(angle);
-    for (let i = 0; i < shapes.length; i++) {
-        const shape = shapes[i];
-        ctx.save();
-        if (isComponent(Rectangle, shape)) {
-            ctx.fillStyle = Color.toString(shape.color);
-            ctx.translate(...Vector.scale(shape.dims, -0.5));
-            ctx.fillRect(...shape.pos, ...shape.dims);
-        } else if (isComponent(Circle, shape)) {
-            ctx.fillStyle = Color.toString(shape.color);
-            ctx.beginPath();
-            ctx.arc(...shape.pos, shape.radius, 0, 2 * Math.PI);
-            ctx.fill();
-        } else if (isComponent(Ellipse, shape)) {
-            ctx.fillStyle = Color.toString(shape.color);
-            ctx.beginPath();
-            ctx.ellipse(...shape.pos, ...shape.dims, 0, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.restore();
-    }
-    ctx.restore();
-}
 
 export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
     const ctx = document.getElementById('app')!.appendChild(
@@ -89,8 +47,6 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
     return (scene: Scene, dt: number) => {
         fpsCounts.push(1 / dt);
         fpsText.innerText = `FPS: ${average()}; [${min()}, ${max()}]`;
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
         let center: Vector2D = Vector.zero();
         let centeredEntities = 0;
 
@@ -115,8 +71,46 @@ export function createRenderSystem(dynamic = true, w = 800, h = 800): System {
             cameraSpeed
         );
 
-        for (let e = 0; e < scene.totalEntities(); e++) {
-            draw(e, ctx, cameraPos);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        const shapes = findComponentsOfTypes<Component>([
+            Rectangle,
+            Circle,
+            Ellipse
+        ]);
+        for (let i = 0; i < shapes.length; i++) {
+            const shape = shapes[i];
+
+            const position = getComponent(shape.entity, Position);
+            const pos: Vector2D = position ? position.pos : [0, 0];
+            const isWorldSpace = position?.isWorldSpace || false;
+
+            const rotation = getComponent(shape.entity, Rotation);
+            const angle = rotation ? rotation.angle : 0;
+
+            ctx.save();
+            ctx.translate(DIMENSIONS[0] / 2, DIMENSIONS[1] / 2);
+            if (isWorldSpace) {
+                ctx.translate(...Vector.scale(cameraPos, -1));
+            }
+            ctx.translate(...pos);
+            ctx.rotate(angle);
+            if (isComponent(Rectangle, shape)) {
+                ctx.fillStyle = Color.toString(shape.color);
+                ctx.translate(...Vector.scale(shape.dims, -0.5));
+                ctx.fillRect(...shape.pos, ...shape.dims);
+            } else if (isComponent(Circle, shape)) {
+                ctx.fillStyle = Color.toString(shape.color);
+                ctx.beginPath();
+                ctx.arc(...shape.pos, shape.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            } else if (isComponent(Ellipse, shape)) {
+                ctx.fillStyle = Color.toString(shape.color);
+                ctx.beginPath();
+                ctx.ellipse(...shape.pos, ...shape.dims, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
         }
     };
 }

@@ -1,6 +1,7 @@
 # TODO
 
 - "requireComponent" for behaviors and components
+- implement zIndex for drawing
 - Trigger colliders (they dont cause any displacement, and only activate on COLLIDERS, not other triggers)
 - Images sprites + spritesheet + animator.
 - UI Elements that interact with mouse (Input.mouseX, Input.mouseY, Input.isMouseDown, Input.isMouseUp) support + Buttons

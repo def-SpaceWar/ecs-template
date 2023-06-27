@@ -1,4 +1,4 @@
-import { type SceneGenerator, createScene } from './util/scene_manager';
+import { type SceneGenerator, Scene } from './util/scene_manager';
 import { Behavior } from './ecs/primitive/behavior';
 import { Position } from './ecs/render/position';
 import { Velocity } from './ecs/physics/velocity';
@@ -26,121 +26,112 @@ export enum Scenes {
 export const INITIAL_SCENE = Scenes.Game;
 
 export const SCENES: SceneGenerator[] = [() => {
-    const scene = createScene(Scenes.Game);
+    const scene = new Scene(Scenes.Game);
 
-    const bg = scene.entity();
-    scene.components.push(
-        new Name(bg, "Background"),
-        new Position(bg, 400, 400),
-        new Rectangle(bg, 0, 0, 1_000_000, 1_000_000, [0, 150, 200])
-    );
+    scene.createEntity()
+        .add(Name, "Background")
+        .add(Position, 400, 400)
+        .add(Rectangle, 0, 0, 1_000_000, 1_000_000, [0, 150, 200])
+    ;
 
-    const platform = scene.entity();
-    scene.components.push(
-        new Name(platform, "Platform"),
-        new Tag(platform, "Platform"),
-        new CollisionTag(platform, "Platform"),
-        new Position(platform, 400, 700),
-        new Rotation(platform, 0),
-        new Rectangle(platform, 0, 0, 1_000_000, 200, [100, 255, 0]),
-        new RectangleCollider(platform, 0, 0, 1_000_000, 200)
-    );
+    scene.createEntity()
+        .add(Name, "Player")
+        .add(Tag, "CameraCenter")
+        .add(CollisionTag, "Player")
+        .add(Position, 200, 400)
+        .add(Mass, 1)
+        .add(Velocity, 0, -500)
+        .add(Restitution, 1)
+        .add(Drag, 0.5)
+        .add(Acceleration, 0, 1_000)
+        .add(Rotation, 0)
+        .add(RotationalVelocity, 12)
+        .add(RotationalResistence, 0.8)
+        .add(Rectangle, 0, 0, 100, 100, [255, 0, 0])
+        .add(RectangleCollider, 0, 0, 100, 100)
+        .add(Rectangle, 50, 0, 100, 10, [0, 0, 255])
+        .add(RectangleCollider, 50, 0, 100, 10)
+        .add(Behavior, MyTestBehavior, { speed: 1_000, jumpPower: 1_000 })
+    ;
 
-    const player = scene.entity();
-    scene.components.push(
-        new Name(player, "Player"),
-        new Tag(player, "CameraCenter"),
-        new CollisionTag(player, "Player"),
-        new Position(player, 200, 400),
-        new Mass(player, 1),
-        new Velocity(player, 0, -500),
-        new Restitution(player, 1),
-        new Drag(player, 0.8),
-        new Acceleration(player, 0, 1_000),
-        new Rotation(player, 0),
-        new RotationalVelocity(player, 12),
-        new RotationalResistence(player, 0.8),
-        new Rectangle(player, 0, 0, 100, 100, [255, 0, 0]),
-        new RectangleCollider(player, 0, 0, 100, 100),
-        new Rectangle(player, 50, 0, 100, 10, [0, 0, 255]),
-        new RectangleCollider(player, 50, 0, 100, 10),
-        new Behavior(player, MyTestBehavior, { speed: 1_000, jumpPower: 1_000 }),
-    );
+    scene.createEntity()
+        .add(Name, "Platform")
+        .add(Tag, "Platform")
+        .add(CollisionTag, "Platform")
+        .add(Position, 400, 700)
+        .add(Rotation, 0)
+        .add(Rectangle, 0, 0, 1_000_000, 200, [100, 255, 0])
+        .add(RectangleCollider, 0, 0, 1_000_000, 200)
+    ;
 
-    const box = scene.entity();
-    scene.components.push(
-        new Name(box, "Box"),
-        new Tag(box, "Platform"),
-        new CollisionTag(box, "Box"),
-        new Position(box, 400, 400),
-        new Mass(box, 1),
-        new Restitution(box, 1),
-        new Drag(box, 0.5),
-        new Velocity(box, 0, 0),
-        new Acceleration(box, 0, 1_000),
-        new Rotation(box, 0),
-        new RotationalVelocity(box, 0),
-        new RotationalResistence(box, 0.3),
-        new Rectangle(box, 0, 0, 100, 100, [100, 50, 0]),
-        new RectangleCollider(box, 0, 0, 100, 100)
-    );
+    scene.createEntity()
+        .add(Name, "Box")
+        .add(Tag, "Platform")
+        .add(CollisionTag, "Box")
+        .add(Position, 400, 400)
+        .add(Mass, 1)
+        .add(Restitution, 1)
+        .add(Drag, 0.5)
+        .add(Velocity, 0, 0)
+        .add(Acceleration, 0, 1_000)
+        .add(Rotation, 0)
+        .add(RotationalVelocity, 0)
+        .add(RotationalResistence, 0.3)
+        .add(Rectangle, 0, 0, 100, 100, [100, 50, 0])
+        .add(RectangleCollider, 0, 0, 100, 100)
+    ;
 
-    const ramp3 = scene.entity();
-    scene.components.push(
-        new Name(ramp3, "Platform"),
-        new Tag(ramp3, "Platform"),
-        new CollisionTag(ramp3, "Platform"),
-        new Position(ramp3, 450, 610),
-        new Rotation(ramp3, 31 * Math.PI / 16),
-        new Rectangle(ramp3, 0, 0, 600, 100, [0, 200, 255]),
-        new RectangleCollider(ramp3, 0, 0, 600, 100)
-    );
+    scene.createEntity()
+        .add(Name, "Ramp1")
+        .add(Tag, "Platform")
+        .add(CollisionTag, "Platform")
+        .add(Position, 450, 610)
+        .add(Rotation, 31 * Math.PI / 16)
+        .add(Rectangle, 0, 0, 600, 100, [0, 200, 255])
+        .add(RectangleCollider, 0, 0, 600, 100)
+    ;
 
 
-    const ramp = scene.entity();
-    scene.components.push(
-        new Name(ramp, "Platform"),
-        new Tag(ramp, "Platform"),
-        new CollisionTag(ramp, "Platform"),
-        new Position(ramp, 450, 610),
-        new Rotation(ramp, 15 * Math.PI / 8),
-        new Rectangle(ramp, 0, 0, 600, 100, [0, 100, 255]),
-        new RectangleCollider(ramp, 0, 0, 600, 100)
-    );
+    scene.createEntity()
+        .add(Name, "Ramp2")
+        .add(Tag, "Platform")
+        .add(CollisionTag, "Platform")
+        .add(Position, 450, 610)
+        .add(Rotation, 15 * Math.PI / 8)
+        .add(Rectangle, 0, 0, 600, 100, [0, 100, 255])
+        .add(RectangleCollider, 0, 0, 600, 100)
+    ;
 
-    const ramp2 = scene.entity();
-    scene.components.push(
-        new Name(ramp2, "Platform"),
-        new Tag(ramp2, "Platform"),
-        new CollisionTag(ramp2, "Platform"),
-        new Position(ramp2, 500, 600),
-        new Rotation(ramp2, 11 * Math.PI / 6),
-        new Rectangle(ramp2, 0, 0, 600, 100, [0, 0, 255]),
-        new RectangleCollider(ramp2, 0, 0, 600, 100)
-    );
+    scene.createEntity()
+        .add(Name, "Ramp3")
+        .add(Tag, "Platform")
+        .add(CollisionTag, "Platform")
+        .add(Position, 500, 600)
+        .add(Rotation, 11 * Math.PI / 6)
+        .add(Rectangle, 0, 0, 600, 100, [0, 0, 255])
+        .add(RectangleCollider, 0, 0, 600, 100)
+    ;
 
-    const ramp4 = scene.entity();
-    scene.components.push(
-        new Name(ramp4, "Platform"),
-        new Tag(ramp4, "Platform"),
-        new CollisionTag(ramp4, "Platform"),
-        new Position(ramp4, 550, 600),
-        new Rotation(ramp4, 8 * Math.PI / 4.5),
-        new Rectangle(ramp4, 0, 0, 800, 100, [100, 0, 255]),
-        new RectangleCollider(ramp4, 0, 0, 800, 100)
-    );
+    scene.createEntity()
+        .add(Name, "Ramp4")
+        .add(Tag, "Platform")
+        .add(CollisionTag, "Platform")
+        .add(Position, 550, 600)
+        .add(Rotation, 8 * Math.PI / 4.5)
+        .add(Rectangle, 0, 0, 800, 100, [100, 0, 255])
+        .add(RectangleCollider, 0, 0, 800, 100)
+    ;
 
     return scene;
 }, () => {
-    const scene = createScene(Scenes.MainMenu);
+    const scene = new Scene(Scenes.MainMenu);
 
-    const wall = scene.entity();
-    scene.components.push(new Name(wall, "Wall"),
-        new Position(wall, 400, 700),
-        new Rotation(wall, 0),
-        new Rectangle(wall, 0, 0, 800, 200, [200, 0, 0]),
-        new RectangleCollider(wall, 0, 0, 1_000, 200)
-    );
+    scene.createEntity()
+        .add(Name, "Wall")
+        .add(Position, 0, 200)
+        .add(Rectangle, 0, 0, 800, 200, [200, 0, 0])
+        .add(RectangleCollider, 0, 0, 1_000, 200)
+    ;
 
     return scene;
 }];
