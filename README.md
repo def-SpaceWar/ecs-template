@@ -15,7 +15,7 @@ To make a template that is easily usable and with components that are minimal.
 - Trigger colliders (they dont cause any collision, and only activate on COLLIDERS, not other triggers)
 - Images sprites + spritesheet + animator.
 - UI Elements that interact with mouse (Input.mouseX, Input.mouseY, Input.isMouseDown, Input.isMouseUp) support + Buttons
-- Add "Friction" component, so rolling can be implemented!
+- Add "Friction" component, so rolling can be implemented! (Really hard)
 
 - \[Performance\] Change all the `map` and `forEach` and the other functional things to common for loops for better performance!
 
