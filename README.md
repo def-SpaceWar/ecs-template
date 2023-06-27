@@ -2,7 +2,7 @@
 
 The `src/main.ts` is not to be touched unless you know what you are doing.
 `src/game.ts` is where you define all the scenes and the settings for the game.
-In the future more documentation is going to be made.
+In the future more documentation will be made.
 
 # Goal
 
