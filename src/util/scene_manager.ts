@@ -4,18 +4,18 @@ import { Behavior, type BehaviorInterface } from "../ecs/primitive/behavior";
 
 export class Scene {
     entityId: Entity = 0;
-    emptyEntities: Entity[] = [];
+    deletedEntities: Entity[] = [];
     components: Component[] = [];
 
     constructor(public sceneId: number) { }
 
     entity() {
-        if (this.emptyEntities.length > 0) return this.emptyEntities.shift()!;
+        if (this.deletedEntities.length > 0) return this.deletedEntities.shift()!;
         return this.entityId++;
     }
 
-    destroyEntity(entity: Entity) {
-        this.emptyEntities.push(entity);
+    destroy(entity: Entity) {
+        this.deletedEntities.push(entity);
         for (let i = 0; i < this.components.length; i++) {
             if (this.components[i].entity != entity) continue;
             this.components.splice(i, 1);
@@ -52,10 +52,10 @@ export class Scene {
 export type SceneGenerator = () => Scene;
 
 export namespace SceneManager {
-    export let currentScene: Scene;
+    export let scene: Scene;
     export let sceneList: SceneGenerator[] = [];
 
     export const setScene = (id: number) => {
-        currentScene = sceneList.filter(s => s().sceneId == id)[0]();
+        scene = sceneList.filter(s => s().sceneId == id)[0]();
     };
 }

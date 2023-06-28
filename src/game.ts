@@ -15,8 +15,8 @@ import { CollisionTag } from './ecs/physics/collision_tag';
 import { RotationalVelocity } from './ecs/physics/rotational_velocity';
 import { RotationalResistence } from './ecs/physics/rotational_resistence';
 import { FillScreen } from './behaviors/fill_screen';
-import { Circle } from './ecs/render/circle';
-import { CircleCollider } from './ecs/physics/circle_collider';
+import { CustomShapeCollider } from './ecs/physics/custom_shape_collider';
+import { CustomShape } from './ecs/render/custom_shape';
 
 export const CAMERA_SPEED = 2;
 export const IS_DYNAMIC_SIZE = true;
@@ -52,11 +52,17 @@ export const SCENES: SceneGenerator[] = [() => {
         .add(Acceleration, 0, 1_000) // gravity
         .add(Rotation)
         .add(RotationalVelocity)
-        .add(RotationalResistence, 0.8)
-        .add(Circle, 0, 0, 50, [255, 0, 0])
-        .add(CircleCollider, 0, 0, 50)
-        .add(Rectangle, 50, 0, 100, 10, [0, 0, 255])
-        .add(RectangleCollider, 50, 0, 100, 10)
+        .add(RotationalResistence, 0.5)
+        .add(CustomShape, 0, 0, [
+            [-70, -50],
+            [70, 50],
+            [50, -100]
+        ], [255, 0, 0])
+        .add(CustomShapeCollider, 0, 0, [
+            [-70, -50],
+            [70, 50],
+            [50, -100]
+        ])
         .behavior(MyTestBehavior, b => {
             b.speed = 2_000;
             b.jumpPower = 1_250;

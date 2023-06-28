@@ -62,7 +62,7 @@ export function isBehavior<T extends BehaviorInterface>(
 export function getBehavior<T extends BehaviorInterface>(
     entity: Entity,
     Type: new (entity: Entity) => T,
-    components: Component[] = SceneManager.currentScene.components
+    components: Component[] = SceneManager.scene.components
 ): T | undefined {
     for (let i = 0; i < components.length; i++) {
         const component = components[i];

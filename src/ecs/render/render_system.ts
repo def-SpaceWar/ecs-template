@@ -9,6 +9,7 @@ import { Circle } from "./circle";
 import { Ellipse } from "./ellipse";
 import { Tag } from "../primitive/tag";
 import { Color } from "../../util/color";
+import { CustomShape } from "./custom_shape";
 
 export const DIMENSIONS: Vector2D = [0, 0];
 
@@ -60,11 +61,10 @@ export function createRenderSystem(cameraSpeed: number, dynamic: boolean, w: num
         const shapes = findComponentsOfTypes<Component>([
             Rectangle,
             Circle,
-            Ellipse
+            Ellipse,
+            CustomShape
         ]);
-        for (let i = 0; i < shapes.length; i++) {
-            const shape = shapes[i];
-
+        for (const shape of shapes) {
             const position = getComponent(shape.entity, Position);
             const pos: Vector2D = position ? position.pos : [0, 0];
             const isWorldSpace = position?.isWorldSpace || false;
@@ -92,6 +92,14 @@ export function createRenderSystem(cameraSpeed: number, dynamic: boolean, w: num
                 ctx.fillStyle = Color.toString(shape.color);
                 ctx.beginPath();
                 ctx.ellipse(...shape.pos, ...shape.dims, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (isComponent(CustomShape, shape)) {
+                ctx.fillStyle = Color.toString(shape.color);
+                ctx.beginPath();
+                for (const point of shape.points) {
+                    ctx.lineTo(...point);
+                }
+                ctx.closePath();
                 ctx.fill();
             }
             ctx.restore();

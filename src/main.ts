@@ -28,8 +28,8 @@ onload = () => {
     ];
     const animate = (before: number) => (now: number) => {
         const dt = Math.max(Math.min((now - before) / 1_000, 0.1), 0.001);
-        for (let i = 0; i < renderSystems.length; i++) {
-            renderSystems[i](SceneManager.currentScene, dt);
+        for (const system of renderSystems) {
+            system(SceneManager.scene, dt);
         }
         requestAnimationFrame(animate(now));
     };
@@ -43,9 +43,9 @@ onload = () => {
     let before = performance.now(), now = Infinity;
     setInterval(() => {
         now = performance.now();
-        const dt = Math.max(Math.min((now - before) / 1_000, 0.1), 0.001);
-        for (let i = 0; i < nonRenderSystems.length; i++) {
-            nonRenderSystems[i](SceneManager.currentScene, dt);
+        const dt = Math.max(Math.min((now - before) / 1_000, 0.01), 0.001);
+        for (const system of nonRenderSystems) {
+            system(SceneManager.scene, dt);
         }
         before = now;
     }, 0);
